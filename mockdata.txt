@@ -1,0 +1,60 @@
+
+"Department(1, "Engineering")"
+
+"Major(1.1, "Software and Knowledge")"
+
+"DepartmentOf(1, 1.1)"
+
+"student(6410546131, "Pang", 2020, "international", 1.1, 1, 1, "Study")"
+
+"requiredCourseByMajor()"
+
+
+Deparment(DId, Dname)
+Major(MId, MName)
+DepartmentOf(DId, MId)
+RequiredCourseByMajor(MId, CId)
+Course(CId, CName, AllowYear, OpenSem)
+PrerequisiteOf(CId1, CId2)
+CorequisiteOf(CId1, CId2)
+Studen(StdId, StdName, StdYear, StdProgram, StdMId, StdDId, StdSem, StdStatus)
+RecievedGrade(stdId, CId, Grade, RegisterYear)
+Register(StdId, CId, RegisterYear, RegisterSem)
+
+
+"Department(1, 'Engineering')"
+
+"Major(1, 'Software Engineering')"
+
+"DepartmentOf(1, 1)"
+
+"RequiredCourseByMajor(1, 101)"
+"RequiredCourseByMajor(1, 102)"
+"RequiredCourseByMajor(1, 103)"
+"RequiredCourseByMajor(1, 104)"
+"RequiredCourseByMajor(1, 105)"
+"RequiredCourseByMajor(1, 106)"
+
+"Course(101, 'Introduction to CS', 1, 1)"
+"Course(102, 'Algorithms', 2, 2)"
+"Course(103, 'Data Analysis', 1, 1)"
+"Course(104, 'Machine Learning', 3, 2)"
+"Course(105, 'Robotics Engineering', 2, 1)"
+"Course(106, 'AI for Robotics', 4, 2)"
+
+"PrerequisiteOf(101, 102)"
+
+"Student(1001, 'Alice Johnson', 2023, 'Bachelor', 1, 1, 1, 'Active')"
+
+"RecievedGrade(1001, 101, 'A', 2023)"
+"RecievedGrade(1001, 101, 'B', 2023)"
+
+"Register(1001, 105, 2024, 1)"
+
+
+## Passed Course
+Studen(StdId, StdName, StdYear, StdProgram, StdMId, StdDId, StdSem, StdStatus) ^
+Course(CId, CName, AllowYear, OpenSem) ^
+RecievedGrade(stdId, CId, Grade, RegisterYear) ^
+Register(StdId, CId, RegisterYear, RegisterSem) ^
+[grade != "F"] -> PassedCourse(StdId, CId, RegisterYear, RegisterSem)
