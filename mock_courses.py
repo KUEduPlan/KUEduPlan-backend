@@ -31,22 +31,27 @@ def assert_courses():
     prolog.assertz('course(106, "AI for Robotics", 4, 2)')
 
     # Assert Prerequisite data
-    prolog.assertz('prerequisiteOf(101, 102)')
+    prolog.assertz('directPrerequisiteOf(101, 102)')
     prolog.assertz('corequisiteOf(101, 102)')
 
-    prolog.assertz('prerequisiteOf(102, 105)')
+    prolog.assertz('directPrerequisiteOf(102, 105)')
     prolog.assertz('corequisiteOf(102, 105)')
-
     prolog.assertz('''prerequisiteOf(A, C) :-
-                   prerequisiteOf(A, B),
-                   prerequisiteOf(B, C)
+                   directPrerequisiteOf(A, B), 
+                   directPrerequisiteOf(B, C),
+                   A \= C
                    ''')
+
     
     # Assert Student data year 2 semester 1
     prolog.assertz('student(1001, "Alice Johnson", 2023, "Bachelor", 1, 1, 1, "Active")')
 
     # Assert Grades and Registration data
-    prolog.assertz('recievedGrade(1001, 101, "A", 2023)')
+    prolog.assertz('recievedGrade(1001, 105, "Undefind", 2024)')
+    prolog.assertz('recievedGrade(1001, 104, "Undefind", 2025)')
+    prolog.assertz('recievedGrade(1001, 102, "Undefind", 2024)')
+    prolog.assertz('recievedGrade(1001, 106, "Undefind", 2026)')
+    prolog.assertz('recievedGrade(1001, 101, "F", 2023)')
     prolog.assertz('recievedGrade(1001, 103, "B", 2023)')
     prolog.assertz('register(1001, 105, 2024, 1)')
     prolog.assertz('register(1001, 103, 2023, 1)') 
@@ -67,7 +72,7 @@ def assert_courses():
         '''
     )
 
-    # # Register major subject without pre, co, pre-co
+    # # # Register major subject without pre, co, pre-co
     prolog.assertz(
         '''canRegister(StdId, CId, Year, StdSem) :-
         currentYear(Year),
@@ -78,55 +83,62 @@ def assert_courses():
         '''
     )
 
-
-    # Register pre course
+    # Register pre course prerequisiteOf
+    prolog.assertz('''
+        canRegister(StdId, CId, Year, StdSem) :-
+            currentYear(Year),
+            student(StdId, _, StdYear, _, _, _, StdSem, _),
+            course(CId, _, AllowYear, OpenSem),
+            prerequisiteOf(PreId, CId),
+            PreId \= CId,                          
+            StdSem == OpenSem,                 
+            Year - StdYear >= AllowYear,       
+            passedCourse(StdId, PreId, RegisterYear, RegisterSem), 
+            RegisterYear =< Year,              
+            RegisterSem \= StdSem      
+    ''')
+    # directPrerequisiteOf
+    prolog.assertz('''
+        canRegister(StdId, CId, Year, StdSem) :-
+            currentYear(Year),
+            student(StdId, _, StdYear, _, _, _, StdSem, _),
+            course(CId, _, AllowYear, OpenSem),
+            directPrerequisiteOf(PreId, CId),
+            PreId \= CId,                          
+            StdSem == OpenSem,                 
+            Year - StdYear >= AllowYear,       
+            passedCourse(StdId, PreId, RegisterYear, RegisterSem), 
+            RegisterYear =< Year,              
+            RegisterSem \= StdSem      
+    ''')
+    # # Register Pre-Co
     prolog.assertz('''
     canRegister(StdId, CId, Year, StdSem) :-
         currentYear(Year),
         student(StdId, _, StdYear, _, _, _, StdSem, _),
         course(CId, _, AllowYear, OpenSem),
-        prerequisiteOf(CID2, CId),
-        CID2 \= CId,                        % Prevent circular prerequisites
-        StdSem == OpenSem,                   % Course is open in the current semester
-        Year - StdYear >= AllowYear,         % Student meets the year requirement
-        passedCourse(StdId, CID2, RegisterYear, RegisterSem), % Prerequisite passed
-        RegisterYear =< Year,                % Prerequisite was completed before this year
-        RegisterSem \= StdSem          % Prerequisite was not completed this semester
+        corequisiteOf(CID2, CId),               % Course has a corequisite
+        register(StdId, CID2, Year, StdSem),    % Corequisite is already registered
+        StdSem == OpenSem,                      % Course is open in the current semester
+        Year - StdYear >= AllowYear             % Student meets the year requirement
     ''')
-
-    # # Register Pre-Co
-    prolog.assertz(
-        '''canRegister(StdId, CId, Year, StdSem) :-
-        currentYear(Year),
-        student(StdId, _, StdYear, _, _, _, StdSem, _),
-        course(CId, _, AllowYear, OpenSem),
-        prerequisiteOf(_, CId),
-        corequisiteOf(_, CId),
-        StdSem == OpenSem,
-        Year - StdYear >= AllowYear,
-        \+ passedCourse(StdId, CId, RegisterYear, RegisterSem),
-        RegisterYear =< Year,
-        RegisterSem \= StdSem,
-        register(StdId, _, Year, StdSem)
-        '''
-    )
 
     # Future course not register ########
     prolog.assertz(
-        '''futureCourse(StdId, CId, FutureYear, RegisterSem) :-
+        '''futureCourse(StdId, CId, FutureYear, OpenSem) :-
             student(StdId, _, StdYear, _, _, _, StdSem, _),
             recievedGrade(StdId, CId, Grade, RegisterYear),
             course(CId, _, AllowYear, OpenSem),
             Grade == "Undefind",
             currentYear(Year),
             AllowYearDiff is AllowYear - (Year - StdYear),
-            FutureYear is Year + AllowYearDiff,
+            FutureYear is StdYear + AllowYearDiff,
             Year - StdYear =< AllowYear,
             register(StdId, _, Year, StdSem)
             '''
     )
 
-        # Future course not register ########
+    # Future course not register ########
     prolog.assertz(
         '''futureCourse(StdId, CId, FutureYear, RegisterSem) :-
             student(StdId, _, StdYear, _, _, _, StdSem, _),
@@ -144,19 +156,47 @@ def assert_courses():
     
 
 # Query for passed courses
-def passed_courses():
-    results = list(prolog.query("passedCourse(1001, Y, Z, M)"))
+def register_subject(StdID):
+    results = list(prolog.query(f"canRegister({StdID}, CID, YEAR, SEM)"))
+    print("Can register")
     print(results)
 
-def register_subject():
-    results = list(prolog.query("canRegister(1001, X, Y, Z)"))
-    print(results)
+def required_course():
+    results = list(prolog.query("requiredCourseByMajor(MAJOR, COURSE)"))
+    return results
 
+def student_data(StdID):
+    results = list(prolog.query(f"student({StdID}, NAME, YEAR, PROGRAM, MID, DID, SEM, STATUS)"))
+    results[0]['NAME'] = results[0]['NAME'].decode('utf-8')
+    results[0]['PROGRAM'] = results[0]['PROGRAM'].decode('utf-8')
+    results[0]['STATUS'] = results[0]['STATUS'].decode('utf-8')
+    return results
+
+def passed_courses(StdID):
+    results = list(prolog.query(f"passedCourse({StdID}, CID, REGISTEREYEAR, REGISTERSEM)"))
+    return results
+
+def recieved_grade(StdID):
+    results = list(prolog.query(f"recievedGrade({StdID}, CID, GRADE, YEAR)"))
+    for i in range(len(results)):
+        results[i]['GRADE'] = results[i]['GRADE'].decode('utf-8')
+    return results
+
+def future_course(StdID):
+    results = list(prolog.query(f"futureCourse({StdID}, CID, FUTUREYEAR, REGISTERSEM)"))
+    return results
+
+def pre_Course():
+    results_direct_courses = list(prolog.query("directPrerequisiteOf(PREID, CID)"))
+    results_pre_courses = list(prolog.query("directPrerequisiteOf(PREID, CID)"))
+    print(results_pre_courses)
+    print(results_direct_courses)
 # Main function
 def main():
     assert_courses()
-    passed_courses()
-    register_subject()
+    StdID = 1001
+    # pre_Course()
+    register_subject(StdID)
 
 # Run the script
 if __name__ == "__main__":
