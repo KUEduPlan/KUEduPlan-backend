@@ -37,13 +37,7 @@ def assert_courses():
 
     prolog.assertz('directPrerequisiteOf("102", "105")')
     prolog.assertz('corequisiteOf("102", "105")')
-    prolog.assertz('''prerequisiteOf(A, C) :-
-                   directPrerequisiteOf(A, B), 
-                   directPrerequisiteOf(B, C),
-                   A \= C
-                   ''')
 
-    
     # Assert Student data year 2 semester 1
     prolog.assertz('student(1001, "Alice Johnson", 2566, "Bachelor", "1", "1", "1", "Active")')
 
@@ -54,10 +48,22 @@ def assert_courses():
     prolog.assertz('recievedGrade(1001, "106", "Undefinded", 2569)')
     prolog.assertz('recievedGrade(1001, "101", "F", 2566)')
     prolog.assertz('recievedGrade(1001, "103", "B", 2566)')
-    prolog.assertz('register(1001, "105", 2567, "1")')
-    prolog.assertz('register(1001, "103", 2566, "1")') 
-    prolog.assertz('register(1001, "101", 2566, "1")')  # Added missing registration for course 101
 
+
+    prolog.assertz('''prerequisiteOf(A, C) :-
+                   directPrerequisiteOf(A, B), 
+                   directPrerequisiteOf(B, C),
+                   A \= C
+                   ''')
+    
+def assert_rules():
+    prolog.assertz('''register(StdId, CId, RegisterYear, OpenSem) :-
+        course(CId, _, AllowYear, OpenSem),
+        student(StdId, _, _, _, _, _, _, _),
+        recievedGrade(StdId, CId, Grade, RegisterYear),
+        Grade \= "Undefinded",
+        Grade \= "W"    
+        ''')
     # Asset current year
     prolog.assertz(f'currentYear({time.localtime().tm_year + 543 - 1})')
 
@@ -150,6 +156,19 @@ def assert_courses():
             canRegister(StdId, CId, FutureYear, OpenSem)
         '''
     )
+
+    prolog.assertz(
+        '''futureCourse(StdId, CId, FutureYear, OpenSem) :-
+            student(StdId, _, StdYear, _, _, _, StdSem, _),
+            recievedGrade(StdId, CId, Grade, RegisterYear),
+            course(CId, _, AllowYear, OpenSem),
+            Grade == "W",
+            currentYear(Year),
+            AllowYearDiff is AllowYear - (Year - StdYear),
+            FutureYear is Year + AllowYearDiff,
+            canRegister(StdId, CId, FutureYear, OpenSem)
+        '''
+    )
     
 
 # Query for passed courses
@@ -207,6 +226,7 @@ def pre_Course():
 # Main function
 def main():
     assert_courses()
+    assert_rules()
     pre = pre_Course()
     print(pre)
 
