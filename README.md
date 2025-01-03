@@ -1,25 +1,99 @@
-# KUEduPlan-backend
+# API Backend Documentation
 
+## Overview
+This document outlines the endpoints and data structures for the student management system API.
 
-# Get all courses that student need to studdy
-input -> student Id
-Filter from mongoDB to get the data of student toget major id
-prolog input majoerID
-```required_course()```
+## Endpoints
 
-# Student data
-input -> student Id
-```student_data(StdID)```
-```[{'NAME': 'Alice Johnson', 'YEAR': 2023, 'PROGRAM': 'Bachelor', 'MID': 1, 'DID': 1, 'SEM': 1, 'STATUS': 'Active'}]```
+### 1. Student Data
+Retrieves detailed information about a specific student.
 
-# Student Passed course
-input -> student Id
-``` [{'CNAME': 101, 'REGISTEREYEAR': 2023, 'REGISTERSEM': 1}, {'CNAME': 103, 'REGISTEREYEAR': 2023, 'REGISTERSEM': 1}]```
+**Endpoint:** `/student_data/{StdId}`
+- Method: GET
+- Parameters: 
+  - `StdId` (integer): Student identification number
 
-# Student Recieved grade
-input -> student Id
-```[{'CID': 101, 'GRADE': 'A', 'YEAR': 2023}, {'CID': 103, 'GRADE': 'B', 'YEAR': 2023}]```
+**Response:**
+```json
+{
+    "NAME": "string",
+    "YEAR": "integer",
+    "PROGRAM": "string",
+    "MID": "string",
+    "DID": "string",
+    "SEM": "string",
+    "STATUS": "string"
+}
+```
 
-# Future Course
+### 2. Initial Study Plan
+Retrieves the study plan for a specific student.
 
-# Can register
+**Endpoint:** `/study_plan/{StdId}`
+- Method: GET
+- Parameters:
+  - `StdId` (integer): Student identification number
+
+**Response:**
+```json
+[
+    {
+        "CID": "string",
+        "YEAR": "integer",
+        "REGISTERSEM": "string",
+        "GRADE": "string",
+        "CNAME": "string"
+    }
+]
+```
+
+### 3. Pre-requisite Courses
+Retrieves information about course prerequisites.
+
+**Endpoint:** `/pre_course`
+- Method: GET
+- Parameters: None
+
+**Response:**
+```json
+[
+    {
+        "PrerequisiteCourse": {
+            "ID": "string",
+            "Name": "string",
+            "AllowedYear": "integer",
+            "OpenSemester": "string"
+        },
+        "CurrentCourse": {
+            "ID": "string",
+            "Name": "string",
+            "AllowedYear": "integer",
+            "OpenSemester": "string"
+        }
+    }
+]
+```
+
+## Data Types
+
+### Student Data Fields
+- `NAME`: Student's full name
+- `YEAR`: Current academic year
+- `PROGRAM`: Enrolled program name
+- `MID`: Major ID
+- `DID`: Department ID
+- `SEM`: Current semester
+- `STATUS`: Student's academic status
+
+### Study Plan Fields
+- `CID`: Course ID
+- `YEAR`: Academic year
+- `REGISTERSEM`: Registration semester
+- `GRADE`: Achieved grade
+- `CNAME`: Course name
+
+### Course Fields
+- `ID`: Course identifier
+- `Name`: Course name
+- `AllowedYear`: Eligible academic year
+- `OpenSemester`: Semester when course is offered
