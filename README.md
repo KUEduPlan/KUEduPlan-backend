@@ -74,8 +74,8 @@ Retrieves information about course prerequisites.
 ]
 ```
 
-### 4. Submit Drop and Fail Courses
-Submits courses to be dropped or marked as failed and returns updated study plan.
+### 4. Submit Drip Semester, Drop and Fail Courses
+Submits courses to be dropped or marked as failed and returns updated study plan. In case that user requires dropping a semester, the frontend will send the request in "Drop".
 
 **Endpoint:** `/submit_drop_fail_course`
 - Method: POST
