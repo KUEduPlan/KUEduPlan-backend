@@ -74,6 +74,44 @@ Retrieves information about course prerequisites.
 ]
 ```
 
+### 4. Submit Drop and Fail Courses
+Submits courses to be dropped or marked as failed and returns updated study plan.
+
+**Endpoint:** `/submit_drop_fail_course`
+- Method: POST
+- Request Body:
+```json
+{
+    "StdID": "integer",
+    "Drop": [
+        {
+            "CID": "string",
+            "Year": "integer",
+            "Sem": "string"
+        }
+    ],
+    "Fail": [
+        {
+            "CID": "string",
+            "Year": "integer",
+            "Sem": "string"
+        }
+    ]
+}
+```
+
+**Response:**
+```json
+[
+    {
+        "CID": "string",
+        "YEAR": "integer",
+        "REGISTERSEM": "string",
+        "GRADE": "string"
+    }
+]
+```
+
 ## Data Types
 
 ### Student Data Fields
@@ -89,7 +127,7 @@ Retrieves information about course prerequisites.
 - `CID`: Course ID
 - `YEAR`: Academic year
 - `REGISTERSEM`: Registration semester
-- `GRADE`: Achieved grade
+- `GRADE`: Achieved grade (can be letter grade or "Undefined")
 - `CNAME`: Course name
 
 ### Course Fields
@@ -97,3 +135,8 @@ Retrieves information about course prerequisites.
 - `Name`: Course name
 - `AllowedYear`: Eligible academic year
 - `OpenSemester`: Semester when course is offered
+
+### Drop/Fail Course Fields
+- `CID`: Course ID to be dropped or marked as failed
+- `Year`: Academic year of the course
+- `Sem`: Semester of the course
