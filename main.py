@@ -18,12 +18,12 @@ class CourseDetail(BaseModel):
     CID: str
     Year: int
     Sem: str
+    Type: str
 
 # Define the request body model
 class DropFailCourseRequest(BaseModel):
     StdID: int
-    Drop: List[CourseDetail]
-    Fail: List[CourseDetail]
+    Courses: List[CourseDetail]
 
 # Root endpoint for sanity check
 @app.get("/")
@@ -151,24 +151,23 @@ def post_drop_fail_course(request: DropFailCourseRequest):
     remove_all_data()
     assert_courses()
 
-    # Process the 'Drop' courses
-    if request.Drop != []:
-        for course in request.Drop:
+    # Process the courses based on their Type
+    for course in request.Courses:
+        if course.Type == "Dropped":
             print(f"Drop course: CID={course.CID}, Year={course.Year}, Sem={course.Sem}")
             prolog.retract(f'recievedGrade({request.StdID}, "{course.CID}", _, {course.Year})')
-            ### Data wrong please fix ###
             prolog.assertz(f'recievedGrade({request.StdID}, "{course.CID}", "W", {course.Year})')
-    if request.Fail != []:
-        # Process the 'Fail' courses
-        for course_fail in request.Fail:
-            # Add your specific logic for Fail courses if necessary
-            print(f"Failed course: CID={course_fail.CID}, Year={course_fail.Year}, Sem={course_fail.Sem}")
-            prolog.retract(f'recievedGrade({request.StdID}, "{course_fail.CID}", _, {course_fail.Year})')
-            prolog.assertz(f'recievedGrade({request.StdID}, "{course_fail.CID}", "F", {course_fail.Year})')
+        elif course.Type == "Failed":
+            print(f"Failed course: CID={course.CID}, Year={course.Year}, Sem={course.Sem}")
+            prolog.retract(f'recievedGrade({request.StdID}, "{course.CID}", _, {course.Year})')
+            prolog.assertz(f'recievedGrade({request.StdID}, "{course.CID}", "F", {course.Year})')
+
+    # Reassert rules and generate a study plan
     assert_rules()
     results = study_plan(request.StdID)
     print(results)
     return results
+
 
 
 
