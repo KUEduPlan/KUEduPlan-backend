@@ -83,18 +83,12 @@ Submits courses to be dropped or marked as failed and returns updated study plan
 ```json
 {
     "StdID": "integer",
-    "Drop": [
+    "Courses": [
         {
             "CID": "string",
             "Year": "integer",
-            "Sem": "string"
-        }
-    ],
-    "Fail": [
-        {
-            "CID": "string",
-            "Year": "integer",
-            "Sem": "string"
+            "Sem": "string",
+            "Type": "string" // Allowed values: "Dropped" or "Failed"
         }
     ]
 }
