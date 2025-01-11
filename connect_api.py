@@ -13,7 +13,7 @@ def request_token(password, username):
     # Replace with your actual request body
     data = {
     "password": password,
-    "username": "b6410546131"
+    "username": "username"
     }
 
     try:
