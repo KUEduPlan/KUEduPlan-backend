@@ -1,9 +1,12 @@
 import requests
+from dotenv import load_dotenv
+import os
 
-from connect_api import request_token, verify_token
+load_dotenv()
+database_url = os.getenv("URL")
 
 def student_status(student_code, token):
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/std/status"
+    url = f"https://{database_url}/kuedu/api/std/status"
     data = {
         "student_code": student_code
     }
@@ -31,7 +34,7 @@ def student_status(student_code, token):
 
 
 def student_enrollment(student_code, token):
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/std/enrollment"
+    url = f"https://{database_url}/kuedu/api/std/enrollment"
     data = {
         "student_code": student_code
     }
@@ -58,7 +61,7 @@ def student_enrollment(student_code, token):
     return res
 
 def student_grades(student_code, token):
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/std/grades"
+    url = f"https://{database_url}/kuedu/api/std/grades"
     data = {
         "student_code": student_code
     }
@@ -85,9 +88,10 @@ def student_grades(student_code, token):
     return res
 
 
+#Unused
 def enrollment_semester(student_code, academic_year, semester, token):
     # Display the specify data 
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/std/enrollment/semester"
+    url = f"https://{database_url}/kuedu/api/std/enrollment/semester"
     data = {
         "student_code": student_code,
         "academic_year": academic_year, #64, 65
@@ -114,19 +118,3 @@ def enrollment_semester(student_code, academic_year, semester, token):
         # Handle exceptions
         return ("An error occurred:", e)
     return res
-
-
-# token = request_token(password, username)
-# verify_token(token)
-
-
-# print(enrollment_semester(student_code, 2564, 1, token))
-
-# print(student_status(student_code, token).keys())
-# print("=====")
-# print(student_enrollment(student_code, token))
-
-# print("========")
-# print(student_grades(student_code, token))
-
-# print("=======")

@@ -5,7 +5,7 @@
 
 "DepartmentOf(1, 1.1)"
 
-"student(6410546131, "Pang", 2020, "international", 1.1, 1, 1, "Study")"
+"student(100, "Pang", 2020, "international", 1.1, 1, 1, "Study")"
 
 "requiredCourseByMajor()"
 

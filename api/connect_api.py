@@ -1,19 +1,18 @@
 import requests
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+database_url = os.getenv("URL")
 
 def request_token(password, username):
     # Replace with your API endpoint
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/token/pair"
-
-    # # Replace with your actual headers if needed
-    # headers = {
-    #     "Content-Type": "application/json",
-    #     "Authorization": "Bearer YOUR_ACCESS_TOKEN"  # Optional if your API requires authentication
-    # }
+    url = f"https://{database_url}/kuedu/api/token/pair"
 
     # Replace with your actual request body
     data = {
     "password": password,
-    "username": "username"
+    "username": username
     }
 
     try:
@@ -35,7 +34,7 @@ def request_token(password, username):
 
 
 def verify_token(token):
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/token/verify"
+    url = f"https://{database_url}/kuedu/api/token/verify"
     data = {
     "token": token,
     }

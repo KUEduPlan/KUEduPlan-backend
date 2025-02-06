@@ -1,11 +1,13 @@
 import requests
+from dotenv import load_dotenv
+import os
 
-from connect_api import request_token, verify_token
-from student_data import *
+load_dotenv()
+database_url = os.getenv("URL")
 
 def program_list(campus_id, faculty_id, edulevel, token):
     # display all of program need to specify campus fuc and edulevel
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/cur/program/list"
+    url = f"https://{database_url}/kuedu/api/cur/program/list"
     data = {
     "campus_id": campus_id,
     "faculty_id": faculty_id,
@@ -32,8 +34,9 @@ def program_list(campus_id, faculty_id, edulevel, token):
         return ("An error occurred:", e)
     return res
 
+#Unused
 def curricurum_program_list(program_id, token):
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/cur/program/curriculum/list"
+    url = f"https://{database_url}/kuedu/api/cur/program/curriculum/list"
     data = {
     "program_id": program_id
     }
@@ -60,7 +63,7 @@ def curricurum_program_list(program_id, token):
     return res
 
 def plan_list(cur_id, token):
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/cur/plan/list"
+    url = f"https://{database_url}/kuedu/api/cur/plan/list"
     data = {
     "cur_id": cur_id
     }
@@ -88,7 +91,7 @@ def plan_list(cur_id, token):
 
 def structure(plan_id, token):
     # กลุ่มสาระที่ต้องเรียนใน plan นั้น min max credit
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/cur/structure"
+    url = f"https://{database_url}/kuedu/api/cur/structure"
     data = {
     "plan_id": plan_id
     }
@@ -116,7 +119,7 @@ def structure(plan_id, token):
 
 def subjects(plan_id, token):
     # กลุ่มสาระที่ต้องเรียนใน plan นั้น min max credit
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/cur/plan/subjects"
+    url = f"https://{database_url}/kuedu/api/cur/plan/subjects"
     data = {
     "plan_id": plan_id
     }
@@ -145,7 +148,7 @@ def subjects(plan_id, token):
 
 def preco_subjects(plan_id, token):
     # กลุ่มสาระที่ต้องเรียนใน plan นั้น min max credit
-    url = "https://webhost.oea.ku.ac.th/kuedu/api/cur/preco/subjects"
+    url = f"https://{database_url}/kuedu/api/cur/preco/subjects"
     data = {
     "plan_id": plan_id
     }
@@ -170,29 +173,3 @@ def preco_subjects(plan_id, token):
         # Handle exceptions
         return ("An error occurred:", e)
     return res
-# program_id = student_status(student_code, token)['program_id']
-
-# print(curricurum_program_list(program_id, token))
-
-# 'program_id': 1012, 'program_name': 'หลักสูตรวิศวกรรมศาสตรบัณฑิต สาขาวิชาวิศวกรรมซอฟต์แวร์และความรู้ (หลักสูตรนานาชาติ)
-password = "pass"
-username = "stdID"
-student_code = "stdID"
-token = request_token(password, username)
-verify_token(token)
-
-campus_id = student_status(student_code, token)['campus_code']
-faculty_id = student_status(student_code, token)['faculty_code']
-cur_id = student_status(student_code, token)['cur_id']
-edulevel = "bachelor"
-program_id = 1012
-plan_id = student_status(student_code, token)['plan_id']
-
-# print(program_list(campus_id, faculty_id, edulevel, token))
-
-# print(student_status(student_code, token))
-# print(curricurum_program_list(program_id, token))
-# print(plan_list(cur_id, token))
-# print(structure(plan_id, token))
-# print(subjects(plan_id, token))
-print(preco_subjects(plan_id, token))

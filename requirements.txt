@@ -2,3 +2,5 @@ fastapi==0.115.6
 pyswip==0.3.2
 uvicorn==0.32.1
 swi-prolog
+pandas==2.2.1
+python-dotenv==1.0.1

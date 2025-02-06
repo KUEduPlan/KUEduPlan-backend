@@ -8,62 +8,61 @@ app = FastAPI()
 # Initialize Prolog
 prolog = Prolog()
 
-# Define course data
-def assert_courses():
-    # Assert Department data
-    prolog.asserta('department("1", "Engineering")')
-    prolog.assertz('major("1", "Software Engineering")')
-    prolog.assertz('departmentOf("1", "1")')
+# # Define course data
+# def assert_courses():
+#     # Assert Department data
+#     prolog.asserta('department("1", "Engineering")')
+#     prolog.assertz('major("1", "Software Engineering")')
+#     prolog.assertz('departmentOf("1", "1")')
 
-    # Assert RequiredCourseByMajor data
-    prolog.assertz('requiredCourseByMajor("1", "101")')
-    prolog.assertz('requiredCourseByMajor("1", "102")')
-    prolog.assertz('requiredCourseByMajor("1", "103")')
-    prolog.assertz('requiredCourseByMajor("1", "104")')
-    prolog.assertz('requiredCourseByMajor("1", "105")')
-    prolog.assertz('requiredCourseByMajor("1", "106")')
+#     # Assert RequiredCourseByMajor data
+#     prolog.assertz('requiredCourseByMajor("1", "101")')
+#     prolog.assertz('requiredCourseByMajor("1", "102")')
+#     prolog.assertz('requiredCourseByMajor("1", "103")')
+#     prolog.assertz('requiredCourseByMajor("1", "104")')
+#     prolog.assertz('requiredCourseByMajor("1", "105")')
+#     prolog.assertz('requiredCourseByMajor("1", "106")')
 
-    # Assert Course data
-    prolog.assertz('course("101", "Introduction to CS", 1, "1")')
-    prolog.assertz('course("102", "Algorithms", 2, "2")')
-    prolog.assertz('course("103", "Data Analysis", 1, "1")')
-    prolog.assertz('course("104", "Machine Learning", 3, "2")')
-    prolog.assertz('course("105", "Robotics Engineering", 2, "1")')
-    prolog.assertz('course("106", "AI for Robotics", 4, "2")')
+#     # Assert Course data
+#     prolog.assertz('course("101", "Introduction to CS", 1, "1")')
+#     prolog.assertz('course("102", "Algorithms", 2, "2")')
+#     prolog.assertz('course("103", "Data Analysis", 1, "1")')
+#     prolog.assertz('course("104", "Machine Learning", 3, "2")')
+#     prolog.assertz('course("105", "Robotics Engineering", 2, "1")')
+#     prolog.assertz('course("106", "AI for Robotics", 4, "2")')
 
-    # Assert Prerequisite data
-    prolog.assertz('directPrerequisiteOf("101", "102")')
-    prolog.assertz('corequisiteOf("101", "102")')
+#     # Assert Prerequisite data
+#     prolog.assertz('directPrerequisiteOf("101", "102")')
+#     prolog.assertz('corequisiteOf("101", "102")')
 
-    prolog.assertz('directPrerequisiteOf("102", "105")')
-    prolog.assertz('corequisiteOf("102", "105")')
+#     prolog.assertz('directPrerequisiteOf("102", "105")')
+#     prolog.assertz('corequisiteOf("102", "105")')
 
-    # Assert Student data year 2 semester 1
-    prolog.assertz('student(1001, "Alice Johnson", 2566, "Bachelor", "1", "1", "1", "Active")')
+#     # Assert Student data year 2 semester 1
+#     # prolog.assertz('student(1001, "Alice Johnson", 2566, "Bachelor", "1", "1", "1", "Active")')
 
-    # Assert Grades and Registration data
-    prolog.assertz('recievedGrade(1001, "105", "Undefinded", 2567)')
-    prolog.assertz('recievedGrade(1001, "104", "Undefinded", 2568)')
-    prolog.assertz('recievedGrade(1001, "102", "Undefinded", 2567)')
-    prolog.assertz('recievedGrade(1001, "106", "Undefinded", 2569)')
-    prolog.assertz('recievedGrade(1001, "101", "F", 2566)')
-    prolog.assertz('recievedGrade(1001, "103", "B", 2566)')
+#     # Assert Grades and Registration data
+#     prolog.assertz('recievedGrade(1001, "105", "Undefinded", 2567)')
+#     prolog.assertz('recievedGrade(1001, "104", "Undefinded", 2568)')
+#     prolog.assertz('recievedGrade(1001, "102", "Undefinded", 2567)')
+#     prolog.assertz('recievedGrade(1001, "106", "Undefinded", 2569)')
+#     prolog.assertz('recievedGrade(1001, "101", "F", 2566)')
+#     prolog.assertz('recievedGrade(1001, "103", "B", 2566)')
 
-
-    prolog.assertz('''prerequisiteOf(A, C) :-
-                   directPrerequisiteOf(A, B), 
-                   directPrerequisiteOf(B, C),
-                   A \= C
-                   ''')
     
 def assert_rules():
-    prolog.assertz('''register(StdId, CId, RegisterYear, OpenSem) :-
-        course(CId, _, AllowYear, OpenSem),
-        student(StdId, _, _, _, _, _, _, _),
-        recievedGrade(StdId, CId, Grade, RegisterYear),
-        Grade \= "Undefinded",
-        Grade \= "W"    
-        ''')
+    # prolog.assertz('''prerequisiteOf(A, C) :-
+    #                directPrerequisiteOf(A, B), 
+    #                directPrerequisiteOf(B, C),
+    #                A \= C
+    #                ''')
+    # prolog.assertz('''register(StdId, CId, RegisterYear, OpenSem) :-
+    #     course(CId, _, AllowYear, OpenSem),
+    #     student(StdId, _, _, _, _, _, _, _),
+    #     recievedGrade(StdId, CId, Grade, RegisterYear),
+    #     Grade \= "Undefinded",
+    #     Grade \= "W"    
+    #     ''')
     # Asset current year
     prolog.assertz(f'currentYear({time.localtime().tm_year + 543 - 1})')
 
@@ -117,7 +116,7 @@ def assert_rules():
             RegisterSem \= StdSem      
     ''')
 
-    # # Register Pre-Co
+    # Register Pre-Co
     prolog.assertz('''
     canRegister(StdId, CId, Year, StdSem) :-
         currentYear(Year),
@@ -143,7 +142,7 @@ def assert_rules():
             canRegister(StdId, CId, FutureYear, OpenSem)
         '''
     )
-        # Future course not register ########
+    # Future course not register ########
     prolog.assertz(
         '''futureCourse(StdId, CId, FutureYear, OpenSem) :-
             student(StdId, _, StdYear, _, _, _, StdSem, _),
@@ -215,21 +214,20 @@ def future_course(StdID):
     # print(results)
     return results
 
-def pre_Course():
-    results_direct_courses = list(prolog.query("directPrerequisiteOf(PREID, CID)"))
-    results_pre_courses = list(prolog.query("prerequisiteOf(PREID, CID)"))
-    results = results_pre_courses + results_direct_courses
-    for i in range(len(results)):
-        results[i]['CID'] = results[i]['CID'].decode('utf-8')
-        results[i]['PREID'] = results[i]['PREID'].decode('utf-8')
-    return results
-# Main function
-def main():
-    assert_courses()
-    assert_rules()
-    pre = pre_Course()
-    print(pre)
+# def pre_Course():
+#     results_direct_courses = list(prolog.query("directPrerequisiteOf(PREID, CID)"))
+#     results_pre_courses = list(prolog.query("prerequisiteOf(PREID, CID)"))
+#     results = results_pre_courses + results_direct_courses
+#     for i in range(len(results)):
+#         results[i]['CID'] = results[i]['CID'].decode('utf-8')
+#         results[i]['PREID'] = results[i]['PREID'].decode('utf-8')
+#     return results
+# # Main function
+# def main():
+#     assert_rules()
+#     pre = pre_Course()
+#     print(pre)
 
-# Run the script
-if __name__ == "__main__":
-    main()
+# # Run the script
+# if __name__ == "__main__":
+#     main()
