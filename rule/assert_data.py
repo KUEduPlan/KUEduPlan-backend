@@ -1,4 +1,4 @@
-from eduplan.database.database import connect_mongo
+from eduplan.database.connect_database import connect_mongo
 from pyswip import Prolog
 import pandas as pd
 
@@ -9,7 +9,6 @@ def assert_student_data(student_code):
     db = connect_mongo("Student")
     collection = db["StudentStatus"]
     student_data = collection.find_one({"student_code": student_code})
-    print(student_data)
     prolog.assertz(f"student({student_code}, '{student_data['first_name_th']}', '{student_data['last_name_th']}', '{student_data['campus_code']}', '{student_data['faculty_code']}', '{student_data['dept_code']}', '{student_data['major_code']}', {student_data['cur_id']}, {student_data['plan_id']}, {student_data['entrance_year']}, {student_data['status_id']}, 1)")
     prolog.assertz(f"student(1, '{student_data['first_name_th']}', '{student_data['last_name_th']}', '{student_data['campus_code']}', '{student_data['faculty_code']}', '{student_data['dept_code']}', '{student_data['major_code']}', {student_data['cur_id']}, {student_data['plan_id']}, {student_data['entrance_year']}, {student_data['status_id']}, 1)")
 

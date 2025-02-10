@@ -1,1 +1,2 @@
-URL=webhost.oea.ku.ac.th
+URL=
+MONGO_URL=

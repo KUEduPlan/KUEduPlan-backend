@@ -1,10 +1,15 @@
 from unittest import result
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from typing import List
 from pyswip import Prolog
 from rule.rule import *
 from fastapi.middleware.cors import CORSMiddleware  # Import CORS Middleware
+from api.connect_api import request_token, verify_token
+from database.student_database import insert_student_enrollment, insert_student_grades, insert_student_status
+from database.curriculumn_database import insert_plan_list, insert_preco_subject, insert_structure, insert_plan_subject
+from database.connect_database import connect_client
 
 # TODO: Assert required course that student need to study in the future
 # TODO: Calculate the min/max credit
@@ -36,6 +41,10 @@ class CourseDetail(BaseModel):
 class DropFailCourseRequest(BaseModel):
     StdID: int
     Courses: List[CourseDetail]
+
+class Login(BaseModel):
+    Username: str
+    Password: str
 
 def assert_data(student_code):
     assert_student_data(student_code)
@@ -72,7 +81,7 @@ def study_plan(stdID):
     passed = passed_courses(stdID)
     future = future_course(stdID)
     grades = recieved_grade(stdID)
-
+    print(passed)
     for course_passed in passed:
         for course_grade in grades:
             if course_passed['CID'] == course_grade['CID']:
@@ -84,7 +93,6 @@ def study_plan(stdID):
     results =  passed + future
 
     courses = required_course()
-    print(results)
 
     for course in courses:
         for result in results:
@@ -155,8 +163,6 @@ def get_student_passed_course(stdID):
                         "OpenSemester": info["OPENSEM"]
                     }
                 })
-
-    print(result)
     return result
 
     # return result
@@ -182,8 +188,42 @@ def post_drop_fail_course(stdID, request: DropFailCourseRequest):
     # Reassert rules and generate a study plan
     assert_rules()
     results = study_plan(request.StdID)
-    print(results)
     return results
 
 
+@app.post("/login")
+def login(request: Login):
+    username = request.Username
+    password = request.Password
+    student_code = username.split("b")[1]
+    client = connect_client()
 
+    try:
+        token = request_token(password, username)
+        verify_token(token)
+
+    except Exception as e:
+        print(e)
+
+    student_collection = client.get_database("Student")["StudentStatus"]
+    student_data = student_collection.find_one({"student_code": student_code})
+    print(student_data)
+
+    if student_data == None:
+        # Insert student
+        insert_student_status(student_code, token)
+        insert_student_enrollment(student_code, token)
+        insert_student_grades(student_code, token)
+
+        # Insert curriculumn
+        insert_plan_list(student_code, client, token)
+        insert_structure(student_code, client, token)
+        insert_plan_subject(student_code, client, token)
+        insert_preco_subject(student_code, client, token)
+        return "Insert data"
+    else:
+        return "Already have data"
+
+@app.get("/logout")
+def logout():
+    return RedirectResponse("/")

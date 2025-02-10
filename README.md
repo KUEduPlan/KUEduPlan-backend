@@ -3,6 +3,60 @@
 ## Overview
 This document outlines the endpoints and data structures for the student management system API.
 
+# Authentication API Documentation
+
+This document outlines the authentication endpoints for the student management system.
+
+## Endpoints
+
+### 1. Login
+`POST /login`
+
+#### Request Body
+```json
+{
+  "Username": "string",  // Format: Contains 'b' followed by student code
+  "Password": "string"
+}
+```
+
+#### Process Flow
+1. Extracts student code from username (splits at 'b' character)
+2. Connects to database client
+3. Requests and verifies authentication token
+4. Checks if student data exists in database
+
+#### First-time Login
+If student data doesn't exist, the following data is initialized:
+- Student status
+- Student enrollment information
+- Student grades
+- Curriculum data:
+  - Plan list
+  - Structure
+  - Plan subjects
+  - Prerequisites subjects
+
+#### Response
+
+- If first-time login:
+  ```
+  "Insert data"
+  ```
+
+- If returning user:
+  ```
+  "Already have data"
+  ```
+
+### 2. Logout
+`GET /logout`
+
+Logs out the current user and redirects to the home page.
+
+#### Response
+- Redirects to root path ("/")
+
 ## Endpoints
 
 ### 1. Student Data
@@ -16,13 +70,17 @@ Retrieves detailed information about a specific student.
 **Response:**
 ```json
 {
-    "NAME": "string",
-    "YEAR": "integer",
-    "PROGRAM": "string",
-    "MID": "string",
+    "StdFirstName": "string",
+    "StdLastName": "string",
+    "CID": "string",
+    "FID": "string",
     "DID": "string",
-    "SEM": "string",
-    "STATUS": "string"
+    "MID": "string",
+    "CurID": "integer",
+    "PlanID": "integer",
+    "StdRegisterYear": "integer",
+    "Status": "integer",
+    "StdSem": "integer"
 }
 ```
 
