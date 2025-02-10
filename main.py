@@ -4,7 +4,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from typing import List
 from pyswip import Prolog
-from rule.rule import *
+from rule.assert_rule import *
 from fastapi.middleware.cors import CORSMiddleware  # Import CORS Middleware
 from api.connect_api import request_token, verify_token
 from database.student_database import insert_student_enrollment, insert_student_grades, insert_student_status

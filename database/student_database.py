@@ -1,8 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from pymongo import MongoClient
+import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(current_dir))
+sys.path.append(project_root)
+
 from eduplan.api.connect_api import *
-from eduplan.api.student_data import *
+from eduplan.api.student_data import * 
 from eduplan.database.connect_database import connect_mongo
 
 def insert_or_replace_database(collection_name: str, student_code: str, data: dict):
