@@ -3,11 +3,10 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-database_url = os.getenv("URL")
 
 def request_token(password, username):
     # Replace with your API endpoint
-    url = f"https://{database_url}/kuedu/api/token/pair"
+    url = os.getenv("URL_REQUEST_TOKEN")
 
     # Replace with your actual request body
     data = {
@@ -34,7 +33,7 @@ def request_token(password, username):
 
 
 def verify_token(token):
-    url = f"https://{database_url}/kuedu/api/token/verify"
+    url = os.getenv("URL_VERIFY_TOKEN")
     data = {
     "token": token,
     }

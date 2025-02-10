@@ -3,10 +3,9 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-database_url = os.getenv("URL")
 
 def student_status(student_code, token):
-    url = f"https://{database_url}/kuedu/api/std/status"
+    url = os.getenv("URL_STUDENT_STATUS")
     data = {
         "student_code": student_code
     }
@@ -34,7 +33,7 @@ def student_status(student_code, token):
 
 
 def student_enrollment(student_code, token):
-    url = f"https://{database_url}/kuedu/api/std/enrollment"
+    url = os.getenv("URL_STUDENT_ENROLL")
     data = {
         "student_code": student_code
     }
@@ -61,7 +60,7 @@ def student_enrollment(student_code, token):
     return res
 
 def student_grades(student_code, token):
-    url = f"https://{database_url}/kuedu/api/std/grades"
+    url = os.getenv("URL_STUDENT_GRADE")
     data = {
         "student_code": student_code
     }
@@ -91,7 +90,7 @@ def student_grades(student_code, token):
 #Unused
 def enrollment_semester(student_code, academic_year, semester, token):
     # Display the specify data 
-    url = f"https://{database_url}/kuedu/api/std/enrollment/semester"
+    url = os.getenv("URL_ENROLL_SEM")
     data = {
         "student_code": student_code,
         "academic_year": academic_year, #64, 65

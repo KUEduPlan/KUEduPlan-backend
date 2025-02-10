@@ -3,11 +3,10 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-database_url = os.getenv("URL")
 
 def program_list(campus_id, faculty_id, edulevel, token):
     # display all of program need to specify campus fuc and edulevel
-    url = f"https://{database_url}/kuedu/api/cur/program/list"
+    url = os.getenv("URL_PROGRAM_LIST")
     data = {
     "campus_id": campus_id,
     "faculty_id": faculty_id,
@@ -36,7 +35,7 @@ def program_list(campus_id, faculty_id, edulevel, token):
 
 #Unused
 def curricurum_program_list(program_id, token):
-    url = f"https://{database_url}/kuedu/api/cur/program/curriculum/list"
+    url = os.getenv("URL_CURRI_PROGRAM_LIST")
     data = {
     "program_id": program_id
     }
@@ -63,7 +62,7 @@ def curricurum_program_list(program_id, token):
     return res
 
 def plan_list(cur_id, token):
-    url = f"https://{database_url}/kuedu/api/cur/plan/list"
+    url = os.getenv("URL_PLAN_LIST")
     data = {
     "cur_id": cur_id
     }
@@ -91,7 +90,7 @@ def plan_list(cur_id, token):
 
 def structure(plan_id, token):
     # กลุ่มสาระที่ต้องเรียนใน plan นั้น min max credit
-    url = f"https://{database_url}/kuedu/api/cur/structure"
+    url = os.getenv("URL_STRUCTURE")
     data = {
     "plan_id": plan_id
     }
@@ -119,7 +118,7 @@ def structure(plan_id, token):
 
 def subjects(plan_id, token):
     # กลุ่มสาระที่ต้องเรียนใน plan นั้น min max credit
-    url = f"https://{database_url}/kuedu/api/cur/plan/subjects"
+    url = os.getenv("URL_SUBJECTS")
     data = {
     "plan_id": plan_id
     }
@@ -148,7 +147,7 @@ def subjects(plan_id, token):
 
 def preco_subjects(plan_id, token):
     # กลุ่มสาระที่ต้องเรียนใน plan นั้น min max credit
-    url = f"https://{database_url}/kuedu/api/cur/preco/subjects"
+    url = os.getenv("URL_PRECO_SUBJECTS")
     data = {
     "plan_id": plan_id
     }
