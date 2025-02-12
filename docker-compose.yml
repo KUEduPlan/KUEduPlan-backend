@@ -3,7 +3,7 @@ services:
   api:
       build: ./eduplan
       ports: 
-          - 3000:3000
+          - 5555:5555
       environment:
           - MONGO_URL=
           - URL_REQUEST_TOKEN=
