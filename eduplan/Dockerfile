@@ -1,0 +1,52 @@
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
+
+# Set the working directory
+WORKDIR /eduplan
+
+ARG MONGO_URL
+ARG URL_REQUEST_TOKEN
+ARG URL_VERIFY_TOKEN
+
+ARG URL_PROGRAM_LIST
+ARG URL_CURRI_PROGRAM_LIST
+ARG URL_PLAN_LIST
+ARG URL_STRUCTURE
+ARG URL_SUBJECTS
+ARG URL_PRECO_SUBJECTS
+
+ARG URL_STUDENT_STATUS
+ARG URL_STUDENT_ENROLL
+ARG URL_STUDENT_GRADE
+ARG URL_ENROLL_SEM
+
+ENV MONGO_URL=${MONGO_URL}
+ENV URL_REQUEST_TOKEN=${URL_REQUEST_TOKEN}
+ENV URL_VERIFY_TOKEN=${URL_VERIFY_TOKEN}
+
+ENV URL_PROGRAM_LIST=${URL_PROGRAM_LIST}
+ENV URL_CURRI_PROGRAM_LIST=${URL_CURRI_PROGRAM_LIST}
+ENV URL_PLAN_LIST=${URL_PLAN_LIST}
+ENV URL_STRUCTURE=${URL_STRUCTURE}
+ENV URL_SUBJECTS=${URL_SUBJECTS}
+ENV URL_PRECO_SUBJECTS=${URL_PRECO_SUBJECTS}
+
+ENV URL_STUDENT_STATUS=${URL_STUDENT_STATUS}
+ENV URL_STUDENT_ENROLL=${URL_STUDENT_ENROLL}
+ENV URL_STUDENT_GRADE=${URL_STUDENT_GRADE}
+ENV URL_ENROLL_SEM=${URL_ENROLL_SEM}
+# Copy the requirements file and install dependencies
+COPY requirements.txt .
+
+RUN apt-get update && apt-get install -y swi-prolog && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Expose the FastAPI default port
+EXPOSE 80
+
+# Copy the application code
+COPY . .
+
+# Command to run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
