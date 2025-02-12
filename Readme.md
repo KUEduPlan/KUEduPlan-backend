@@ -82,3 +82,73 @@ If you encounter any issues:
 2. Verify SWI-Prolog is properly installed and accessible from command line
 3. Check that all environment variables are properly set
 4. Ensure all dependencies are installed correctly
+
+# Web App Docker Deployment Guide
+
+This guide will walk you through deploying the web application using Docker.
+
+## Prerequisites
+
+- Docker and Docker Compose installed on your system
+- MongoDB installed and running
+- Basic understanding of Docker concepts
+
+## Configuration
+
+1. Add a `environment` in docker-compose.yml
+
+```
+      environment:
+          - MONGO_URL=
+          - URL_REQUEST_TOKEN=
+          - URL_VERIFY_TOKEN=
+          - URL_PROGRAM_LIST=
+          - URL_CURRI_PROGRAM_LIST=
+          - URL_PLAN_LIST=
+          - URL_STRUCTURE=
+          - URL_SUBJECTS=
+          - URL_PRECO_SUBJECTS=
+          - URL_STUDENT_STATUS=
+          - URL_STUDENT_ENROLL=
+          - URL_STUDENT_GRADE=
+          - URL_ENROLL_SEM=
+```
+
+2. Verify that MongoDB is running on your system:
+   - For Linux/Mac: `sudo systemctl status mongodb`
+   - For Windows: Check MongoDB service in Services application
+
+## Deployment Steps
+
+1. Build and start the containers:
+```bash
+docker compose up --build -d
+```
+The `--build` flag ensures fresh image builds
+The `-d` flag runs containers in detached mode
+
+2. Verify the deployment:
+```bash
+docker ps
+```
+You should see your containers running
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. Check MongoDB connection:
+   - Ensure MongoDB is running
+   - Check MongoDB logs: `docker logs mongodb-container`
+
+2. View application logs:
+```bash
+docker logs your-app-container
+```
+
+## Stopping the Application
+
+To stop and remove the containers:
+```bash
+docker compose down
+```

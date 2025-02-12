@@ -173,8 +173,7 @@ def assert_rules():
 # Query for passed courses
 def register_subject(StdID):
     results = list(prolog.query(f"canRegister({StdID}, CID, YEAR, SEM)"))
-    print("Can register")
-    print(results)
+    return results
 
 def course_data():
     results = list(prolog.query("course(CID, CNAME, ALLOWYEAR, OPENSEM)"))

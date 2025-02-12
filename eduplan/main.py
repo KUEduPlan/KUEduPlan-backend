@@ -81,7 +81,6 @@ def study_plan(stdID):
     passed = passed_courses(stdID)
     future = future_course(stdID)
     grades = recieved_grade(stdID)
-    print(passed)
     for course_passed in passed:
         for course_grade in grades:
             if course_passed['CID'] == course_grade['CID']:
@@ -207,7 +206,6 @@ def login(request: Login):
 
     student_collection = client.get_database("Student")["StudentStatus"]
     student_data = student_collection.find_one({"student_code": student_code})
-    print(student_data)
 
     if student_data == None:
         # Insert student

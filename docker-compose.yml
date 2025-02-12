@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  api:
+      build: ./eduplan
+      ports: 
+          - 80:80
+      environment:
+          - MONGO_URL=
+          - URL_REQUEST_TOKEN=
+          - URL_VERIFY_TOKEN=
+          - URL_PROGRAM_LIST=
+          - URL_CURRI_PROGRAM_LIST=
+          - URL_PLAN_LIST=
+          - URL_STRUCTURE=
+          - URL_SUBJECTS=
+          - URL_PRECO_SUBJECTS=
+          - URL_STUDENT_STATUS=
+          - URL_STUDENT_ENROLL=
+          - URL_STUDENT_GRADE=
+          - URL_ENROLL_SEM=
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: eduplan2025
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
+# mongodb://admin:eduplan2025@localhost:27017/
