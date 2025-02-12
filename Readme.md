@@ -95,7 +95,7 @@ This guide will walk you through deploying the web application using Docker.
 
 ## Configuration
 
-1. Add a `environment` in docker-compose.yml
+1. Add a `environment` api service in docker-compose.yml
 
 ```
       environment:
@@ -114,9 +114,13 @@ This guide will walk you through deploying the web application using Docker.
           - URL_ENROLL_SEM=
 ```
 
-2. Verify that MongoDB is running on your system:
-   - For Linux/Mac: `sudo systemctl status mongodb`
-   - For Windows: Check MongoDB service in Services application
+2. Add a `environment` mongodb service in docker-compose.yml
+
+```
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: 
+      MONGO_INITDB_ROOT_PASSWORD: 
+```
 
 ## Deployment Steps
 

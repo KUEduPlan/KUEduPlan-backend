@@ -23,8 +23,8 @@ services:
     image: mongo:latest
     container_name: mongodb
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: eduplan2025
+      MONGO_INITDB_ROOT_USERNAME: 
+      MONGO_INITDB_ROOT_PASSWORD: 
     ports:
       - "27017:27017"
     volumes:
@@ -32,4 +32,3 @@ services:
 
 volumes:
   mongodb_data:
-# mongodb://admin:eduplan2025@localhost:27017/
