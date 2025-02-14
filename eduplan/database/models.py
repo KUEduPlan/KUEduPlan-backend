@@ -112,4 +112,21 @@ class PrecoSubjectsResponse(BaseModel):
     preco_name: str
     preco_type: str
 
+class CourseDetail(BaseModel):
+    CID: str
+    Year: int
+    Sem: str
+    Type: str
 
+# Define the request body model
+class DropFailCourseRequest(BaseModel):
+    StdID: int
+    Courses: List[CourseDetail]
+
+class Login(BaseModel):
+    Username: str
+    Password: str
+
+class Tokens(BaseModel):
+    StdID: int
+    Tokens: str

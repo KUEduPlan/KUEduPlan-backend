@@ -208,9 +208,6 @@ def recieved_grade(StdID):
 
 def future_course(StdID):
     results = list(prolog.query(f"futureCourse({StdID}, CID, YEAR, REGISTERSEM)"))
-    for i in range(len(results)):
-        results[i]['REGISTERSEM'] = results[i]['REGISTERSEM'].decode('utf-8')
-    # print(results)
     return results
 
 # def pre_Course():

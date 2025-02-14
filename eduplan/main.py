@@ -10,13 +10,15 @@ from api.connect_api import request_token, verify_token
 from database.student_database import insert_student_enrollment, insert_student_grades, insert_student_status
 from database.curriculumn_database import insert_plan_list, insert_preco_subject, insert_structure, insert_plan_subject
 from database.connect_database import connect_client
+from tokens import eduplan_tokens, insert_student_tokens, revoke_tokens
+from database.models import DropFailCourseRequest, Login, Tokens
 
 # TODO: Assert required course that student need to study in the future
 # TODO: Calculate the min/max credit
 # TODO: Created test
 # TODO: Some of preco code doesn't in subject code ?
-# TODO: Added login part and all function required login
-# TODO: Added button required current sem fromstudent 
+# TODO: Added login part and all function required login add token genelize
+# TODO: Added button required current sem from student 
 
 prolog = Prolog()
 app = FastAPI()
@@ -30,28 +32,14 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-
-class CourseDetail(BaseModel):
-    CID: str
-    Year: int
-    Sem: str
-    Type: str
-
-# Define the request body model
-class DropFailCourseRequest(BaseModel):
-    StdID: int
-    Courses: List[CourseDetail]
-
-class Login(BaseModel):
-    Username: str
-    Password: str
-
 def assert_data(student_code):
     assert_student_data(student_code)
     assert_student_register(student_code)
     assert_student_grade_recived(student_code)
     assert_required_course(student_code)
     assert_preco_course(student_code)
+    assert_student_recived_grade_current_sem(student_code)
+    
 
 # Root endpoint for sanity check
 @app.get("/")
@@ -71,16 +59,19 @@ def remove_all_data():
     prolog.retractall('currentYear(_)')
 
     # Clear Rules
-    prolog.retractall('passedCourse(_, _, _, _)')
+    prolog.retractall('passedCourse(_, _, _, _, _)')
     prolog.retractall('canRegister(_, _, _, _)')
-    prolog.retractall('futureCourse(_, _, _, _)')
+    prolog.retractall('futureCourse(_, _, _, _, _)')
+    prolog.retractall('prerequisiteOf(_, _)')
 
 
 def study_plan(stdID):
     # Retrieve data with fallback to empty lists if None is returned
+    course = required_course()
     passed = passed_courses(stdID)
-    future = future_course(stdID)
+    future = future_course(stdID) + future_fail_course(stdID)
     grades = recieved_grade(stdID)
+    print(len(passed), len(future))
     for course_passed in passed:
         for course_grade in grades:
             if course_passed['CID'] == course_grade['CID']:
@@ -97,6 +88,7 @@ def study_plan(stdID):
         for result in results:
             if result['CID'] == course['CID']:
                 result['CNAME'] = course['CNAME']
+    print(len(results))
     return results
 
 # Endpount to get the student data
@@ -112,7 +104,6 @@ def get_student_data(stdID):
 def get_student_passed_course(stdID):
     remove_all_data()
     assert_data(stdID)
-
     assert_rules()
     results = study_plan(stdID)
     return results
@@ -162,6 +153,7 @@ def get_student_passed_course(stdID):
                         "OpenSemester": info["OPENSEM"]
                     }
                 })
+    print(len(result))
     return result
 
     # return result
@@ -200,6 +192,9 @@ def login(request: Login):
     try:
         token = request_token(password, username)
         verify_token(token)
+        tokens, expire_time = eduplan_tokens(student_code)
+        print(tokens)
+        insert_student_tokens(student_code, tokens, expire_time)
 
     except Exception as e:
         print(e)
@@ -218,10 +213,12 @@ def login(request: Login):
         insert_structure(student_code, client, token)
         insert_plan_subject(student_code, client, token)
         insert_preco_subject(student_code, client, token)
-        return "Insert data"
+        return tokens, expire_time
     else:
-        return "Already have data"
+        return tokens, expire_time
 
-@app.get("/logout")
-def logout():
-    return RedirectResponse("/")
+@app.post("/logout")
+def logout(request: Tokens):
+    student_code = str(request.StdID)
+    tokens = request.Tokens
+    return revoke_tokens(student_code, tokens)

@@ -9,8 +9,7 @@ def assert_student_data(student_code):
     db = connect_mongo("Student")
     collection = db["StudentStatus"]
     student_data = collection.find_one({"student_code": student_code})
-    prolog.assertz(f"student({student_code}, '{student_data['first_name_th']}', '{student_data['last_name_th']}', '{student_data['campus_code']}', '{student_data['faculty_code']}', '{student_data['dept_code']}', '{student_data['major_code']}', {student_data['cur_id']}, {student_data['plan_id']}, {student_data['entrance_year']}, {student_data['status_id']}, 1)")
-    prolog.assertz(f"student(1, '{student_data['first_name_th']}', '{student_data['last_name_th']}', '{student_data['campus_code']}', '{student_data['faculty_code']}', '{student_data['dept_code']}', '{student_data['major_code']}', {student_data['cur_id']}, {student_data['plan_id']}, {student_data['entrance_year']}, {student_data['status_id']}, 1)")
+    prolog.assertz(f"student('{student_code}', '{student_data['first_name_th']}', '{student_data['last_name_th']}', '{student_data['campus_code']}', '{student_data['faculty_code']}', '{student_data['dept_code']}', '{student_data['major_code']}', {student_data['cur_id']}, {student_data['plan_id']}, {student_data['entrance_year']}, {student_data['status_id']}, 2)")
 
 
 def assert_student_register(student_code):
@@ -23,22 +22,21 @@ def assert_student_register(student_code):
     enrollment_data = filtered_df.to_dict(orient='records')
     for i in range(len(enrollment_data)):
         prolog.assertz(
-            f"register({student_code}, '{enrollment_data[i]['subject_code']}', '{enrollment_data[i]['subject_name']}', {enrollment_data[i]['academic_year']}, {enrollment_data[i]['semester']})"
-        )    
+            f"register('{student_code}', '{enrollment_data[i]['subject_code']}', '{enrollment_data[i]['subject_name']}', {enrollment_data[i]['academic_year']}, {enrollment_data[i]['semester']})"
+        )
 
 def assert_student_grade_recived(student_code):
     db = connect_mongo("Student")
     collection = db["StudentGrades"]
     student_grades = collection.find_one({"student_code": student_code})['grades']
-
     # 'academic_year': 0, 'semester': 0 Transfer Course
     for i in range(len(student_grades)):
         prolog.assertz(
-            f"recivedGrade({student_code}, '{student_grades[i]['subject_code']}', '{student_grades[i]['subject_name']}', '{student_grades[i]['grade']}', {student_grades[i]['academic_year']}, {student_grades[i]['semester']})"
+            f"recivedGrade('{student_code}', '{student_grades[i]['subject_code']}', '{student_grades[i]['subject_name']}', '{student_grades[i]['grade']}', {student_grades[i]['academic_year']}, {student_grades[i]['semester']})"
         )
 
 def assert_required_course(student_code):
-    results = list(prolog.query(f"student({student_code}, StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
+    results = list(prolog.query(f"student('{student_code}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
 
     db = connect_mongo("Curriculumn")
     collection = db["PlanSubject"]
@@ -46,17 +44,17 @@ def assert_required_course(student_code):
 # course(CID, CNAME, GID, GName, ALLOWYEAR : int, OPENSEM) 
     plan_subject = course_data['plan_subject']
     for i in range(len(plan_subject)):
+        plan_subject[i]['subject_code'] = plan_subject[i]['subject_code'].split('-')[0]
         prolog.assertz(
             f"course('{plan_subject[i]['subject_code']}', '{plan_subject[i]['subject_name']}', '{plan_subject[i]['group_no']}', '{plan_subject[i]['group_name']}', {plan_subject[i]['class_year']}, {plan_subject[i]['semester']})"
         )
 
 def assert_preco_course(student_code):
-    results = list(prolog.query(f"student({student_code}, StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
+    results = list(prolog.query(f"student('{student_code}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
     db = connect_mongo("Curriculumn")
     collection = db["PreCoSubject"]
     course_data = collection.find_one({"plan_id": results[0]['PlanID']})
     preco_subject = course_data['preco_subject']
-    print(len(preco_subject))
 
     df = pd.DataFrame(preco_subject)
     filtered_df_pre = df[df['preco_type'].isin(['pre'])]
@@ -74,17 +72,43 @@ def assert_preco_course(student_code):
             f"corequisiteOf('{co_course[i]['preco_code']}', '{co_course[i]['subject_code']}')"
         )
 
+def assert_student_recived_grade_current_sem(student_code):
+    std_db = connect_mongo("Student")
+    std_collection = std_db["StudentGrades"]
+    student_grades = std_collection.find_one({"student_code": student_code})['grades']
+
+    results = list(prolog.query(f"student('{student_code}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
+    db = connect_mongo("Curriculumn")
+    collection = db["PlanSubject"]
+    course_data = collection.find_one({"plan_id": results[0]['PlanID']})['plan_subject']
+    for i in range(len(course_data)):
+        course_data[i]['subject_code'] = course_data[i]['subject_code'].split('-')[0]
+    # Create pandas DataFrames
+    df_student = pd.DataFrame(student_grades)
+    df_course = pd.DataFrame(course_data)
+
+    # Find the subject_codes in student data that are not in course data
+    subject_codes_in_student_not_in_course = df_course[~df_course['subject_code'].isin(df_student['subject_code'])]
+    undefined_course_data = subject_codes_in_student_not_in_course.to_dict(orient='records')
+
+    for i in range(len(undefined_course_data)):
+        undefined_course_data[i]['class_year'] = (undefined_course_data[i]['class_year'] + results[0]['StdRegisterYear'] - 1) % 100
+        undefined_course_data[i]['subject_code'] = undefined_course_data[i]['subject_code']
+        prolog.assertz(
+            f"recivedGrade('{student_code}', '{undefined_course_data[i]['subject_code']}', '{undefined_course_data[i]['subject_name']}', 'Undefined', {undefined_course_data[i]['class_year']}, {undefined_course_data[i]['semester']})"
+        )
+
 # Query for passed courses
 def student_data(stdID):
-    results = list(prolog.query(f"student({stdID}, StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
+    results = list(prolog.query(f"student('{stdID}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
     return results
 
 def register_data(stdID):
-    results = list(prolog.query(f"register({stdID}, CId, CName, RegisterYear, OpenSem)"))
+    results = list(prolog.query(f"register('{stdID}', CId, CName, RegisterYear, OpenSem)"))
     return results
 
 def recieved_grade(stdID):
-    results = list(prolog.query(f"recivedGrade({stdID}, CID, CName, GRADE, YEAR, SEM)"))
+    results = list(prolog.query(f"recivedGrade('{stdID}', CID, CName, GRADE, YEAR, SEM)"))
     return results
 
 def required_course():
