@@ -69,9 +69,28 @@ def study_plan(stdID):
     # Retrieve data with fallback to empty lists if None is returned
     course = required_course()
     passed = passed_courses(stdID)
-    future = future_course(stdID) + future_fail_course(stdID)
+    future_data = future_course(stdID) + future_fail_course(stdID)
+
+    df = pd.DataFrame(future_data)
+    df['YEAR'] = df['YEAR'] % 100
+    df_unique = df.drop_duplicates()
+    future = df_unique.to_dict(orient='records')
+
+    # TODO: Fixed bugs that collision conditions
+
+    # filtered_future = []
+
+    # for course in future:
+    #     query_grade = list(prolog.query(f"recivedGrade('{stdID}', '{course['CID']}', CName, GRADE, YEAR, SEM)"))
+    #     # Check if there exists any grade that is not 'F'
+    #     has_passing_grade = any(entry['GRADE'] != 'F' and entry['GRADE'] != 'Undefined' for entry in query_grade)        
+    #     if has_passing_grade:  
+    #         filtered_future.append(course)
+
+    # future = [item for item in future if item not in filtered_future]
+
     grades = recieved_grade(stdID)
-    print(len(passed), len(future))
+
     for course_passed in passed:
         for course_grade in grades:
             if course_passed['CID'] == course_grade['CID']:
@@ -88,7 +107,6 @@ def study_plan(stdID):
         for result in results:
             if result['CID'] == course['CID']:
                 result['CNAME'] = course['CNAME']
-    print(len(results))
     return results
 
 # Endpount to get the student data
@@ -114,7 +132,6 @@ def get_student_passed_course(stdID):
     assert_data(stdID)
     assert_rules()
     pre_course = pre_Course()
-    print(pre_Course())
     result = []
 
     for course in pre_course:
@@ -122,7 +139,6 @@ def get_student_passed_course(stdID):
         
         # Query prerequisite course info
         pre_info_list = list(prolog.query(f"course('{pre_id}', CNAME, GID, GNAME, ALLOWYEAR, OPENSEM)"))
-
         if pre_info_list:  # Ensure pre_info_list is not empty
             for pre_info in pre_info_list:  # Iterate through the list
                 pre_info['ID'] = pre_id
@@ -154,10 +170,7 @@ def get_student_passed_course(stdID):
                         "OpenSemester": info["OPENSEM"]
                     }
                 })
-    print(len(result))
     return result
-
-    # return result
 
 @app.post("/submit_drop_fail_course/{stdID}")
 def post_drop_fail_course(stdID, request: DropFailCourseRequest):
@@ -166,20 +179,22 @@ def post_drop_fail_course(stdID, request: DropFailCourseRequest):
     remove_all_data()
     assert_data(stdID)
 
-    # Process the courses based on their Type
+    # print(request)
+    # grades = recieved_grade(stdID)
+    # return grades
+
+    # # Process the courses based on their Type
     for course in request.Courses:
         if course.Type == "Dropped":
-            print(f"Drop course: CID={course.CID}, Year={course.Year}, Sem={course.Sem}")
-            prolog.retract(f'recievedGrade({request.StdID}, "{course.CID}", _, {course.Year})')
-            prolog.assertz(f'recievedGrade({request.StdID}, "{course.CID}", "W", {course.Year})')
+            prolog.retract(f"recivedGrade('{stdID}', '{course.CID}', '{course.CName}', _, _, {course.Sem})") 
+            prolog.assertz(f"recivedGrade('{stdID}', '{course.CID}', '{course.CName}', 'W', {course.Year}, {course.Sem})")    
         elif course.Type == "Failed":
-            print(f"Failed course: CID={course.CID}, Year={course.Year}, Sem={course.Sem}")
-            prolog.retract(f'recievedGrade({request.StdID}, "{course.CID}", _, {course.Year})')
-            prolog.assertz(f'recievedGrade({request.StdID}, "{course.CID}", "F", {course.Year})')
-
+        #   print(f"Failed course: CID={course.CID}, Year={course.Year}, Sem={course.Sem}")
+            prolog.retract(f"recivedGrade('{stdID}', '{course.CID}', '{course.CName}', _, _, {course.Sem})") 
+            prolog.assertz(f"recivedGrade('{stdID}', '{course.CID}', '{course.CName}', 'F', {course.Year}, {course.Sem})")   
     # Reassert rules and generate a study plan
     assert_rules()
-    results = study_plan(request.StdID)
+    results = study_plan(stdID)
     return results
 
 

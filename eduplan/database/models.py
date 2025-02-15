@@ -114,8 +114,9 @@ class PrecoSubjectsResponse(BaseModel):
 
 class CourseDetail(BaseModel):
     CID: str
+    CName: str
     Year: int
-    Sem: str
+    Sem: int
     Type: str
 
 # Define the request body model

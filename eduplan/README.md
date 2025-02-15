@@ -144,8 +144,9 @@ Submits courses to be dropped or marked as failed and returns updated study plan
     "Courses": [
         {
             "CID": "string",
-            "Year": "integer",
-            "Sem": "string",
+            "CName": "string",
+            "Year": "integer", // 64, 65, 66, 67
+            "Sem": "integer",
             "Type": "string" // Allowed values: "Dropped" or "Failed"
         }
     ]
