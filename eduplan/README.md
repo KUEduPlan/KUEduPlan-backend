@@ -18,7 +18,11 @@ This document outlines the authentication endpoints for the student management s
   "Username": "string",  // Format: Contains 'b' followed by student code
   "Password": "string"
 }
+
+ // return string(student_code)
 ```
+
+
 
 #### Process Flow
 1. Extracts student code from username (splits at 'b' character)
@@ -80,7 +84,8 @@ Retrieves detailed information about a specific student.
     "PlanID": "integer",
     "StdRegisterYear": "integer",
     "Status": "integer",
-    "StdSem": "integer"
+    "StdSem": "integer",
+    "StdID": "string"
 }
 ```
 
@@ -160,7 +165,8 @@ Submits courses to be dropped or marked as failed and returns updated study plan
         "CID": "string",
         "YEAR": "integer",
         "REGISTERSEM": "string",
-        "GRADE": "string"
+        "GRADE": "string",
+        "CNAME": "string"
     }
 ]
 ```

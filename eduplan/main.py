@@ -116,6 +116,7 @@ def get_student_data(stdID):
     assert_data(stdID)
     assert_rules()
     results = student_data(stdID)
+    results[0]['StdID'] = stdID
     return results
 
 @app.get("/study_plan/{stdID}")
@@ -229,10 +230,10 @@ def login(request: Login):
         insert_structure(student_code, client, token)
         insert_plan_subject(student_code, client, token)
         insert_preco_subject(student_code, client, token)
-        return tokens, expire_time
+        return student_code
     else:
-        return tokens, expire_time
-
+        return student_code
+    
 @app.post("/logout")
 def logout(request: Tokens):
     student_code = str(request.StdID)
