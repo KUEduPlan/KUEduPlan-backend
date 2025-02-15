@@ -63,11 +63,15 @@ def assert_preco_course(student_code):
     co_course = filtered_df_co.to_dict(orient='records')
 
     for i in range(len(pre_course)):
+        pre_course[i]['preco_code'] = pre_course[i]['preco_code'].split('-')[0]
+        pre_course[i]['subject_code'] = pre_course[i]['subject_code'].split('-')[0]
         prolog.assertz(
             f"directPrerequisiteOf('{pre_course[i]['preco_code']}', '{pre_course[i]['subject_code']}')"
         )
 
     for i in range(len(co_course)):
+        co_course[i]['preco_code'] = co_course[i]['preco_code'].split('-')[0]
+        co_course[i]['subject_code'] = co_course[i]['subject_code'].split('-')[0]
         prolog.assertz(
             f"corequisiteOf('{co_course[i]['preco_code']}', '{co_course[i]['subject_code']}')"
         )

@@ -114,6 +114,7 @@ def get_student_passed_course(stdID):
     assert_data(stdID)
     assert_rules()
     pre_course = pre_Course()
+    print(pre_Course())
     result = []
 
     for course in pre_course:
