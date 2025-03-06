@@ -12,9 +12,17 @@ from database.curriculumn_database import insert_plan_list, insert_preco_subject
 from database.connect_database import connect_client
 from tokens import eduplan_tokens, insert_student_tokens, revoke_tokens
 from database.models import DropFailCourseRequest, Login, Tokens
+import time
 
 # TODO: Added login part and all function required login add token genelize
 # TODO: Added button required current sem from student 
+# # TODO:     {
+#         "CID": "01219497",
+#         "CNAME": "สัมมนาเชิงเทคนิคและปฎิบัติทางวิศวกรรมซอฟต์แวร์และความรู้",
+#         "YEAR": 66,
+#         "REGISTERSEM": 2,
+#         "GRADE": "Undefinded"
+#     }, get only currently future course and currently course
 
 prolog = Prolog()
 app = FastAPI()
@@ -72,17 +80,35 @@ def study_plan(stdID):
     df_unique = df.drop_duplicates()
     future = df_unique.to_dict(orient='records')
 
-    # TODO: Fixed bugs that collision conditions
+
+    # Find max YEAR
+    max_year = max(course['YEAR'] for course in passed)
+
+    # Filter courses with max YEAR
+    filtered_by_year = [course for course in passed if course['YEAR'] == max_year]
+
+    # Find max SEM from the filtered courses
+    max_sem = max(course['SEM'] for course in filtered_by_year)
+
+    # Filter courses with max SEM
+    max_y_s_p = [course for course in filtered_by_year if course['SEM'] == max_sem]
+
+    if max_y_s_p[0]['SEM'] == 2:
+        max_y_s_p[0]['SEM'] = 1
+        max_y_s_p[0]['YEAR'] = max_y_s_p[0]['YEAR'] + 1
+    if max_y_s_p[0]['SEM'] == 1:
+        max_y_s_p[0]['SEM'] = 2
+    current_year = max_y_s_p[0]['YEAR']
+    current_sem = max_y_s_p[0]['SEM']
+    print(current_year, current_sem)
+
     remove_courses = set()
 
-    # print("Future", future)
 
     for course in future:
         query_grade = list(prolog.query(f"recivedGrade('{stdID}', '{course['CID']}', CName, GRADE, YEAR, SEM)"))
         for i in range(len(query_grade)):
             query_grade[i]['CID'] = course['CID']
-        # print("Query", query_grade)
-        
         # Check if the course is already passed
         for grade_entry in query_grade:
             if grade_entry['GRADE'] not in ["Undefined", "F"]:  # Passed courses
@@ -90,7 +116,24 @@ def study_plan(stdID):
 
     # Filter out passed courses
     future = [course for course in future if course['CID'] not in remove_courses]
-    print(future)
+
+    # TODO: Added test
+    for course in future:
+        course_year = course['YEAR']
+        course_sem = course['REGISTERSEM']
+
+        if course_year < current_year and course_sem == 2:
+            # If previous year's sem 2, register in current semester
+            course['YEAR'], course['REGISTERSEM'] = current_year, current_sem
+        elif course_year < course['REGISTERSEM'] and course_sem == 1:
+            # If previous year's sem 1, register in next year's sem 1
+            course['YEAR'], course['REGISTERSEM'] = current_year + 1, 1
+        else:
+            # Otherwise, keep the original registration year and semester
+            course['YEAR'], course['REGISTERSEM'] = course_year, course_sem
+
+        print(f"Course {course['CID']} should be registered in Year {course['YEAR']}, Semester {course['REGISTERSEM']}")
+
 
     grades = recieved_grade(stdID)
 
