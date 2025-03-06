@@ -13,10 +13,6 @@ from database.connect_database import connect_client
 from tokens import eduplan_tokens, insert_student_tokens, revoke_tokens
 from database.models import DropFailCourseRequest, Login, Tokens
 
-# TODO: Assert required course that student need to study in the future
-# TODO: Calculate the min/max credit
-# TODO: Created test
-# TODO: Some of preco code doesn't in subject code ?
 # TODO: Added login part and all function required login add token genelize
 # TODO: Added button required current sem from student 
 
@@ -77,17 +73,24 @@ def study_plan(stdID):
     future = df_unique.to_dict(orient='records')
 
     # TODO: Fixed bugs that collision conditions
+    remove_courses = set()
 
-    # filtered_future = []
+    # print("Future", future)
 
-    # for course in future:
-    #     query_grade = list(prolog.query(f"recivedGrade('{stdID}', '{course['CID']}', CName, GRADE, YEAR, SEM)"))
-    #     # Check if there exists any grade that is not 'F'
-    #     has_passing_grade = any(entry['GRADE'] != 'F' and entry['GRADE'] != 'Undefined' for entry in query_grade)        
-    #     if has_passing_grade:  
-    #         filtered_future.append(course)
+    for course in future:
+        query_grade = list(prolog.query(f"recivedGrade('{stdID}', '{course['CID']}', CName, GRADE, YEAR, SEM)"))
+        for i in range(len(query_grade)):
+            query_grade[i]['CID'] = course['CID']
+        # print("Query", query_grade)
+        
+        # Check if the course is already passed
+        for grade_entry in query_grade:
+            if grade_entry['GRADE'] not in ["Undefined", "F"]:  # Passed courses
+                remove_courses.add(grade_entry['CID'])
 
-    # future = [item for item in future if item not in filtered_future]
+    # Filter out passed courses
+    future = [course for course in future if course['CID'] not in remove_courses]
+    print(future)
 
     grades = recieved_grade(stdID)
 
