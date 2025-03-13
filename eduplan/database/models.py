@@ -1,3 +1,4 @@
+from threading import get_ident
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -118,6 +119,19 @@ class CourseDetail(BaseModel):
     Year: int
     Sem: int
     Type: str
+
+class OpenPlanCourse(BaseModel):
+    Plan_ID: int
+    CID: str
+    CNAME: str
+    GID: str
+    GNAME: str
+    ALLOWYEAR: int
+    OPENSEM: int
+
+class OpenPlanChoice(BaseModel):
+    Plan_ID: int
+
 
 # Define the request body model
 class DropFailCourseRequest(BaseModel):

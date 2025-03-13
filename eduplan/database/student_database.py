@@ -66,4 +66,30 @@ def insert_student_grades(student_code: str, token):
     except Exception as e:
         print(f"Error in insert_student_grades: {e}")
         return e
+
+def insert_or_replace_open_plan_database(collection_name: str, plan_id:int, data: dict):
+    db = connect_mongo("Plan")
+    collection = db[collection_name]
+    existing_data = collection.find_one({"Plan_ID":plan_id})
     
+    if existing_data:
+        # Replace existing data
+        collection.replace_one({"Plan_ID":plan_id}, data)
+    else:
+        # Insert new data
+        collection.insert_one(data)
+
+def insert_open_plan_data(plan_id, data):
+    collection_name = "OpenPlan"
+    try:
+        inserted_data = {
+            "Plan_ID": plan_id,
+            "Open_Plan": data
+            }
+        if not inserted_data:
+            raise ValueError("No data returned from student_grades function")
+        insert_or_replace_open_plan_database(collection_name, plan_id, inserted_data)
+        return "Already updated open plan"
+    except Exception as e:
+        print(f"Error in insert_or_replace_open_plan_database: {e}")
+        return e
