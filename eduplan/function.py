@@ -4,7 +4,8 @@ from rule.assert_rule import *
 
 def study_plan(stdID):
     # Retrieve data with fallback to empty lists if None is returned
-    course = required_course()
+    # course = required_course()
+    # print("Course:", course)
     passed = passed_courses(stdID)
     future_data = future_course(stdID) + future_fail_course(stdID)
 
@@ -78,7 +79,13 @@ def study_plan(stdID):
     for course_future in future:
         course_future['GRADE'] = 'Undefinded'
 
-    results =  passed + future
+    grades_f = list(prolog.query(f"recivedGrade('{stdID}', CID, CName, 'F', YEAR, SEM)"))
+    grades_w = list(prolog.query(f"recivedGrade('{stdID}', CID, CName, 'W', YEAR, SEM)"))
+    for i in range(len(grades_f)):
+        grades_f[i]['GRADE'] = 'F'
+    for i in range(len(grades_w)):
+        grades_w[i]['GRADE'] = 'W'
+    results =  passed + grades_f + grades_w + future
 
     courses = required_course()
 
@@ -104,12 +111,21 @@ distribution_data = [{'CID' : '01417167', 'CNAME': 'คณิตศาสตร�
                      ]
 def assert_data(student_code):
     assert_student_data(student_code)
+    assert_required_course(student_code)
     assert_student_register(student_code)
     assert_student_grade_recived(student_code)
-    assert_required_course(student_code)
     assert_preco_course(student_code)
     assert_student_recived_grade_current_sem(student_code)
-    
+
+def open_plan_assert_data(student_code):
+    assert_student_data(student_code)
+    # assert_required_course(student_code)
+    assert_student_register(student_code)
+    assert_student_grade_recived(student_code)
+    assert_preco_course(student_code)
+    assert_student_recived_grade_current_sem(student_code)
+
+
 def distribution(cid, pre_course_ids):
     # Iterate through distribution_data and count students who got 'F' for courses not in pre_course
     results = {}

@@ -138,6 +138,11 @@ class DropFailCourseRequest(BaseModel):
     StdID: int
     Courses: List[CourseDetail]
 
+class OpenPlanDropFailCourseRequest(BaseModel):
+    StdID: str
+    Plan_ID: int
+    Courses: List[CourseDetail]
+
 class Login(BaseModel):
     Username: str
     Password: str
