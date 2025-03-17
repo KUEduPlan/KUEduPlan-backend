@@ -255,33 +255,7 @@ def passed_pre_std(pre, cour):
                         'Eligible': 1
                     }
                 results[year] = data
-    print(results)
-        # print(student)
-        # std_id_f = data['STD_GOT_F']
-
-        # std_id = data['STD_PASSED']['STD_ID']
-        # print('F', std_id_f)
-        # print('passed', std_id)
-        # if std_id in passed_students:
-
-
-    # Check students in course STD_GOT_F who also passed pre
-    # for student in cour['STD_GOT_F']:
-    #     std_id = student['STD_ID']
-    #     if std_id in passed_students:
-    #         year = passed_students[std_id]
-    #         if year in results.keys():
-    #             data = {
-    #                         'passed_pre': results[year]['passed_pre'] + 1
-                                                    
-    #                     }
-    #         else:
-    #             data = {
-    #                 'passed_pre': 1
-    #             }
-    #         results[year] = data
-    # return results
-    # return passed_students
+    return results
 
 def distribution_course():
     results = []

@@ -119,13 +119,9 @@ def get_student_passed_course(stdID):
 
 @app.post("/submit_drop_fail_course/{stdID}")
 def post_drop_fail_course(stdID, request: DropFailCourseRequest):
-
     # Clear data and assert courses
     remove_all_data()
     assert_data(stdID)
-    # print(request)
-    # grades = recieved_grade(stdID)
-    # return grades
 
     # # Process the courses based on their Type
     for course in request.Courses:
