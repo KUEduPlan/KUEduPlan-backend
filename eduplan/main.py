@@ -290,7 +290,7 @@ def removed_course(request: OpenPlanCourse):
 ## TODO: Student used open plan
 def open_study_plan(stdID, courses):
     # Retrieve data with fallback to empty lists if None is returned
-    course = required_course()
+    # course = required_course()
     passed = passed_courses(stdID)
     future_data = future_course(stdID) + future_fail_course(stdID)
     df = pd.DataFrame(future_data)
@@ -351,7 +351,14 @@ def open_study_plan(stdID, courses):
 
 
     grades = recieved_grade(stdID)
-
+    
+    studen_data = list(prolog.query(f"student('{stdID}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
+    student_current_year = (time.localtime().tm_year + 543 - 1) % 100
+    student_current_sem = studen_data[0]['StdSem']
+    # print(student_current_year, student_current_sem)
+    
+    future = [course for course in future if not (course['YEAR'] < student_current_year or course['SEM'] < student_current_sem)]
+    # print(future)
     for course_passed in passed:
         for course_grade in grades:
             if course_passed['CID'] == course_grade['CID']:

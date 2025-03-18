@@ -74,7 +74,7 @@ def assert_rules():
         course(CId, _, _, _),
         recievedGrade(StdId, CId, Grade, RegisterYear), 
         register(StdId, CId, RegisterYear, RegisterSem), 
-        Grade \= "Undefinded",
+        Grade \= "Undefined",
         Grade \= "W"
         '''
     )
@@ -134,7 +134,7 @@ def assert_rules():
             student(StdId, _, StdYear, _, _, _, StdSem, _),
             recievedGrade(StdId, CId, Grade, RegisterYear),
             course(CId, _, AllowYear, OpenSem),
-            Grade == "Undefinded",
+            Grade == "Undefined",
             currentYear(Year),
             AllowYearDiff is AllowYear - (Year - StdYear),
             FutureYear is Year + AllowYearDiff,

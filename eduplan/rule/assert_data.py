@@ -1,7 +1,7 @@
 from eduplan.database.connect_database import connect_mongo
 from pyswip import Prolog
 import pandas as pd
-
+import time
 
 prolog = Prolog()
 
@@ -102,6 +102,31 @@ def assert_student_recived_grade_current_sem(student_code):
             f"recivedGrade('{student_code}', '{undefined_course_data[i]['subject_code']}', '{undefined_course_data[i]['subject_name']}', 'Undefined', {undefined_course_data[i]['class_year']}, {undefined_course_data[i]['semester']})"
         )
 
+def assert_student_recived_grade_current_sem_open_plan(student_code):
+    std_db = connect_mongo("Student")
+    std_collection = std_db["StudentGrades"]
+    student_grades = std_collection.find_one({"student_code": student_code})['grades']
+
+    results = list(prolog.query(f"student('{student_code}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
+    db = connect_mongo("Curriculumn")
+    collection = db["PlanSubject"]
+    course_data = collection.find_one({"plan_id": results[0]['PlanID']})['plan_subject']
+    for i in range(len(course_data)):
+        course_data[i]['subject_code'] = course_data[i]['subject_code'].split('-')[0]
+    # Create pandas DataFrames
+    df_student = pd.DataFrame(student_grades)
+    df_course = pd.DataFrame(course_data)
+
+    # Find the subject_codes in student data that are not in course data
+    subject_codes_in_student_not_in_course = df_course[~df_course['subject_code'].isin(df_student['subject_code'])]
+    undefined_course_data = subject_codes_in_student_not_in_course.to_dict(orient='records')
+
+    for i in range(len(undefined_course_data)):
+        undefined_course_data[i]['class_year'] = (undefined_course_data[i]['class_year'] + results[0]['StdRegisterYear'] - 1) % 100
+        undefined_course_data[i]['subject_code'] = undefined_course_data[i]['subject_code']
+        prolog.assertz(
+            f"recivedGrade('{student_code}', '{undefined_course_data[i]['subject_code']}', '{undefined_course_data[i]['subject_name']}', 'Undefined', {undefined_course_data[i]['class_year']}, {undefined_course_data[i]['semester']})"
+        )
 # Query for passed courses
 def student_data(stdID):
     results = list(prolog.query(f"student('{stdID}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))

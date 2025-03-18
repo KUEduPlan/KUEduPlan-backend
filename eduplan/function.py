@@ -123,7 +123,7 @@ def open_plan_assert_data(student_code):
     assert_student_register(student_code)
     assert_student_grade_recived(student_code)
     assert_preco_course(student_code)
-    assert_student_recived_grade_current_sem(student_code)
+    assert_student_recived_grade_current_sem_open_plan(student_code)
 
 
 def distribution(cid, pre_course_ids):
