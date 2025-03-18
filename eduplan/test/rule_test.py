@@ -146,7 +146,7 @@ class TestPrologRules(unittest.TestCase):
         can_register_co_course_rule()
         future_course_undefined_rule()
         results = future_course(self.stdID)
-        expected = [{'CID': 'E', 'CNAME': 'AE', 'YEAR': 2567, 'REGISTERSEM': 1}, {'CID': 'F', 'CNAME': 'AI', 'YEAR': 2567, 'REGISTERSEM': 2}, {'CID': 'G', 'CNAME': 'AG', 'YEAR': 2568, 'REGISTERSEM': 1}, {'CID': 'H', 'CNAME': 'AF', 'YEAR': 2568, 'REGISTERSEM': 2}]
+        expected = [{'CID': 'E', 'CNAME': 'AE', 'YEAR': 2567, 'SEM': 1}, {'CID': 'F', 'CNAME': 'AI', 'YEAR': 2567, 'SEM': 2}, {'CID': 'G', 'CNAME': 'AG', 'YEAR': 2568, 'SEM': 1}, {'CID': 'H', 'CNAME': 'AF', 'YEAR': 2568, 'SEM': 2}]
         self.assertEqual(results, expected)
 
     def test_future_course_fail(self):
@@ -160,7 +160,7 @@ class TestPrologRules(unittest.TestCase):
         can_register_co_course_rule()
         future_course_fail_rule()  
         results = future_fail_course(self.stdID)
-        expected = [{'CID': 'B', 'CNAME': 'AB', 'YEAR': 2566, 'REGISTERSEM': 2}, {'CID': 'C', 'CNAME': 'AC', 'YEAR': 2567, 'REGISTERSEM': 1}]
+        expected = [{'CID': 'B', 'CNAME': 'AB', 'YEAR': 2566, 'SEM': 2}, {'CID': 'C', 'CNAME': 'AC', 'YEAR': 2567, 'SEM': 1}]
         self.assertEqual(results, expected)
 
     def test_future_course_drop(self):
@@ -174,7 +174,7 @@ class TestPrologRules(unittest.TestCase):
         can_register_co_course_rule()
         future_course_drop_rule()  
         results = future_course(self.stdID)
-        expected = [{'CID': 'B2', 'CNAME': 'AB2', 'YEAR': 2566, 'REGISTERSEM': 2}]
+        expected = [{'CID': 'B2', 'CNAME': 'AB2', 'YEAR': 2566, 'SEM': 2}]
         self.assertEqual(results, expected)
 
 if __name__ == '__main__':

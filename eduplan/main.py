@@ -132,6 +132,7 @@ def post_drop_fail_course(stdID, request: DropFailCourseRequest):
         #   print(f"Failed course: CID={course.CID}, Year={course.Year}, Sem={course.Sem}")
             prolog.retract(f"recivedGrade('{stdID}', '{course.CID}', '{course.CName}', _, _, {course.Sem})") 
             prolog.assertz(f"recivedGrade('{stdID}', '{course.CID}', '{course.CName}', 'F', {course.Year}, {course.Sem})")   
+        print(list(prolog.query(f"recivedGrade('{stdID}', '{course.CID}', CName, GRADE, YEAR, SEM)")))
     # Reassert rules and generate a study plan
     assert_rules()
     results = study_plan(stdID)
@@ -320,7 +321,7 @@ def open_study_plan(stdID, courses):
 
     remove_courses = set()
     for course in future:
-        query_grade = list(prolog.query(f"recivedGrade('{stdID}', '{course['CID']}', CName, GRADE, YEAR, SEM)"))
+        query_grade = list(prolog.query(f"recivedGrade('{stdID}', '{course['CID']}', CNAME, GRADE, YEAR, SEM)"))
         for i in range(len(query_grade)):
             query_grade[i]['CID'] = course['CID']
         # Check if the course is already passed
@@ -334,19 +335,19 @@ def open_study_plan(stdID, courses):
     # TODO: Added test
     for course in future:
         course_year = course['YEAR']
-        course_sem = course['REGISTERSEM']
+        course_sem = course['SEM']
 
         if course_year < current_year and course_sem == 2:
             # If previous year's sem 2, register in current semester
-            course['YEAR'], course['REGISTERSEM'] = current_year, current_sem
-        elif course_year < course['REGISTERSEM'] and course_sem == 1:
+            course['YEAR'], course['SEM'] = current_year, current_sem
+        elif course_year < course['SEM'] and course_sem == 1:
             # If previous year's sem 1, register in next year's sem 1
-            course['YEAR'], course['REGISTERSEM'] = current_year + 1, 1
+            course['YEAR'], course['SEM'] = current_year + 1, 1
         else:
             # Otherwise, keep the original registration year and semester
-            course['YEAR'], course['REGISTERSEM'] = course_year, course_sem
+            course['YEAR'], course['SEM'] = course_year, course_sem
 
-        print(f"Course {course['CID']} should be registered in Year {course['YEAR']}, Semester {course['REGISTERSEM']}")
+        print(f"Course {course['CID']} should be registered in Year {course['YEAR']}, Semester {course['SEM']}")
 
 
     grades = recieved_grade(stdID)
@@ -357,10 +358,10 @@ def open_study_plan(stdID, courses):
                 course_passed['GRADE'] = course_grade['GRADE']
     
     for course_future in future:
-        course_future['GRADE'] = 'Undefinded'
+        course_future['GRADE'] = 'Undefined'
 
-    grades_f = list(prolog.query(f"recivedGrade('{stdID}', CID, CName, 'F', YEAR, SEM)"))
-    grades_w = list(prolog.query(f"recivedGrade('{stdID}', CID, CName, 'W', YEAR, SEM)"))
+    grades_f = list(prolog.query(f"recivedGrade('{stdID}', CID, CNAME, 'F', YEAR, SEM)"))
+    grades_w = list(prolog.query(f"recivedGrade('{stdID}', CID, CNAME, 'W', YEAR, SEM)"))
     for i in range(len(grades_f)):
         grades_f[i]['GRADE'] = 'F'
     for i in range(len(grades_w)):

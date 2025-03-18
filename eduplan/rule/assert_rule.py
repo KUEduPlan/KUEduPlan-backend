@@ -12,6 +12,7 @@ prolog = Prolog()
 
 def current_year_rule():
     prolog.assertz(f'currentYear({time.localtime().tm_year + 544 - 1})')
+    print(time.localtime().tm_year + 544 - 1)
 
 def pre_rule():
     prolog.assertz('''prerequisiteOf(A, C) :-
@@ -93,6 +94,18 @@ def future_course_undefined_rule():
 
 def future_course_fail_rule():
     # Future course not register ########
+    # prolog.assertz(
+    #     '''futureCourse(StdId, CId, CNAME, FutureYear, OpenSem) :-
+    #         student(StdId, _, _, _, _, _, _, _, _, StdYear, _, StdSem),
+    #         recivedGrade(StdId, CId, _, Grade, RegisterYear, _),
+    #         course(CId, CNAME, _, _, AllowYear, OpenSem),
+    #         Grade == 'F',
+    #         currentYear(Year),
+    #         AllowYearDiff is  AllowYear - (Year - StdYear),
+    #         FutureYear is Year + AllowYearDiff + 1,
+    #         canRegister(StdId, CId, FutureYear, OpenSem)
+    #     '''
+    # )
     prolog.assertz(
         '''futureCourse(StdId, CId, CNAME, FutureYear, OpenSem) :-
             student(StdId, _, _, _, _, _, _, _, _, StdYear, _, StdSem),
@@ -100,13 +113,27 @@ def future_course_fail_rule():
             course(CId, CNAME, _, _, AllowYear, OpenSem),
             Grade == 'F',
             currentYear(Year),
-            AllowYearDiff is AllowYear - (Year - StdYear),
-            FutureYear is Year + AllowYearDiff + 1,
+            CheckAllowYear is  Year - StdYear -1,
+            CheckAllowYear >= AllowYear,
+            RecievedYear is RegisterYear + 2500,
+            FutureYear is RecievedYear + 1,
             canRegister(StdId, CId, FutureYear, OpenSem)
         '''
     )
 
 def future_course_drop_rule():
+    # prolog.assertz(
+    #     '''futureCourse(StdId, CId, CNAME, FutureYear, OpenSem) :-
+    #         student(StdId, _, _, _, _, _, _, _, _, StdYear, _, StdSem),
+    #         recivedGrade(StdId, CId, _, Grade, RegisterYear, _),
+    #         course(CId, CNAME, _, _, AllowYear, OpenSem),
+    #         Grade == 'W',
+    #         currentYear(Year),
+    #         AllowYearDiff is AllowYear - (Year - StdYear),
+    #         FutureYear is Year + AllowYearDiff + 1,
+    #         canRegister(StdId, CId, FutureYear, _)
+    #     '''
+    # )
     prolog.assertz(
         '''futureCourse(StdId, CId, CNAME, FutureYear, OpenSem) :-
             student(StdId, _, _, _, _, _, _, _, _, StdYear, _, StdSem),
@@ -114,9 +141,11 @@ def future_course_drop_rule():
             course(CId, CNAME, _, _, AllowYear, OpenSem),
             Grade == 'W',
             currentYear(Year),
-            AllowYearDiff is AllowYear - (Year - StdYear),
-            FutureYear is Year + AllowYearDiff + 1,
-            canRegister(StdId, CId, FutureYear, _)
+            CheckAllowYear is  Year - StdYear -1,
+            CheckAllowYear >= AllowYear,
+            RecievedYear is RegisterYear + 2500,
+            FutureYear is RecievedYear + 1,
+            canRegister(StdId, CId, FutureYear, OpenSem)
         '''
     )
 
@@ -149,11 +178,11 @@ def register_subject(StdID, futureyear):
     return results
 
 def future_course(StdID):
-    results = list(prolog.query(f"futureCourse('{StdID}', CID, CNAME, YEAR, REGISTERSEM)"))
+    results = list(prolog.query(f"futureCourse('{StdID}', CID, CNAME, YEAR, SEM)"))
     return results
 
 def future_fail_course(StdID):
-    results = list(prolog.query(f"futureCourse('{StdID}', CID, CNAME, YEAR, REGISTERSEM)"))
+    results = list(prolog.query(f"futureCourse('{StdID}', CID, CNAME, YEAR, SEM)"))
     df = pd.DataFrame(results)
     df_unique = df.drop_duplicates()
     df_list = df_unique.to_dict(orient="records")
