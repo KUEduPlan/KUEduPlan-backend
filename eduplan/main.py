@@ -12,8 +12,11 @@ from database.curriculumn_database import insert_plan_list, insert_preco_subject
 from database.connect_database import connect_client
 from tokens import eduplan_tokens, insert_student_tokens, revoke_tokens
 from database.models import DropFailCourseRequest, Login, Tokens, OpenPlanCourse, OpenPlanChoice, OpenPlanDropFailCourseRequest
-from function import *
-
+from based_distribution import *
+from based_study_plan import *
+from based_open_plan import *
+from based_prolog_data import *
+from based_advisor_data import *
 # TODO: Added login part and all function required login add token genelize
 # TODO: Added button required current sem from student 
 
@@ -35,24 +38,48 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to the KU EduPlan API!"}
 
-# Fetch the initial study plan for the user, 
-# including courses, prerequisites, and semester structure.
+@app.post("/login")
+def login(request: Login):
+    username = request.Username
+    password = request.Password
+    student_code = username.split("b")[1]
+    client = connect_client()
 
-def remove_all_data():
-    prolog.retractall('student(_, _, _, _, _, _, _, _, _, _, _, _)')
-    prolog.retractall('register(_, _, _, _, _)')
-    prolog.retractall('recivedGrade(_, _, _, _, _, _)')
-    prolog.retractall('course(_, _, _, _, _, _)')
-    prolog.retractall('directPrerequisiteOf(_, _)')
-    prolog.retractall('corequisiteOf(_, _)')
-    prolog.retractall('currentYear(_)')
+    try:
+        token = request_token(password, username)
+        verify_token(token)
+        tokens, expire_time = eduplan_tokens(student_code)
+        print(tokens)
+        insert_student_tokens(student_code, tokens, expire_time)
 
-    # Clear Rules
-    prolog.retractall('passedCourse(_, _, _, _, _)')
-    prolog.retractall('canRegister(_, _, _, _)')
-    prolog.retractall('futureCourse(_, _, _, _, _)')
-    prolog.retractall('prerequisiteOf(_, _)')
+    except Exception as e:
+        print(e)
 
+    student_collection = client.get_database("Student")["StudentStatus"]
+    student_data = student_collection.find_one({"student_code": student_code})
+
+    if student_data == None:
+        # Insert student
+        insert_student_status(student_code, token)
+        insert_student_enrollment(student_code, token)
+        insert_student_grades(student_code, token)
+
+        # Insert curriculumn
+        insert_plan_list(student_code, client, token)
+        insert_structure(student_code, client, token)
+        insert_plan_subject(student_code, client, token)
+        insert_preco_subject(student_code, client, token)
+        return student_code
+    else:
+        return student_code
+    
+@app.post("/logout")
+def logout(request: Tokens):
+    student_code = str(request.StdID)
+    tokens = request.Tokens
+    return revoke_tokens(student_code, tokens)
+
+# TODO: Student and study plan endpoint
 # Endpount to get the student data
 @app.get("/student_data/{stdID}")
 def get_student_data(stdID):
@@ -139,50 +166,8 @@ def post_drop_fail_course(stdID, request: DropFailCourseRequest):
     return results
 
 
-@app.post("/login")
-def login(request: Login):
-    username = request.Username
-    password = request.Password
-    student_code = username.split("b")[1]
-    client = connect_client()
-
-    try:
-        token = request_token(password, username)
-        verify_token(token)
-        tokens, expire_time = eduplan_tokens(student_code)
-        print(tokens)
-        insert_student_tokens(student_code, tokens, expire_time)
-
-    except Exception as e:
-        print(e)
-
-    student_collection = client.get_database("Student")["StudentStatus"]
-    student_data = student_collection.find_one({"student_code": student_code})
-
-    if student_data == None:
-        # Insert student
-        insert_student_status(student_code, token)
-        insert_student_enrollment(student_code, token)
-        insert_student_grades(student_code, token)
-
-        # Insert curriculumn
-        insert_plan_list(student_code, client, token)
-        insert_structure(student_code, client, token)
-        insert_plan_subject(student_code, client, token)
-        insert_preco_subject(student_code, client, token)
-        return student_code
-    else:
-        return student_code
-    
-@app.post("/logout")
-def logout(request: Tokens):
-    student_code = str(request.StdID)
-    tokens = request.Tokens
-    return revoke_tokens(student_code, tokens)
-
 # TODO: Request PRECO course from advisor or data of plan id of advisor cannot use student data
 ## TODO: pre help
-
 @app.get("/distribution_course")
 def get_distribution_course():
     return distribution_course()
@@ -204,53 +189,6 @@ def post_distribution_course(CID):
 
 
 ### TODO: Open Plan
-def assert_required_course_open_plan(plan_id):
-    db = connect_mongo("Curriculumn")
-    collection = db["PlanSubject"]
-    course_data = collection.find_one({"plan_id": plan_id})
-    plan_subject = course_data['plan_subject']
-    for i in range(len(plan_subject)):
-        plan_subject[i]['subject_code'] = plan_subject[i]['subject_code'].split('-')[0]
-    key_mapping = {
-    "CID": "subject_code",
-    "CNAME": "subject_name",
-    "GID": "group_no",
-    "GNAME": "group_name",
-    "ALLOWYEAR": "class_year",
-    "OPENSEM": "semester"
-    }
-    plan_subject = [
-    {new_key: item[old_key] for new_key, old_key in key_mapping.items()}
-    for item in plan_subject
-    ]
-    
-    insert_open_plan_data(plan_id, plan_subject)
-    for i in range(len(plan_subject)):
-        prolog.assertz(
-            f"course('{plan_subject[i]['CID']}', '{plan_subject[i]['CNAME']}', '{plan_subject[i]['GID']}', '{plan_subject[i]['GNAME']}', {plan_subject[i]['ALLOWYEAR']}, {plan_subject[i]['OPENSEM']})"
-        )
-
-def assert_open_plan(plan_id):
-    db = connect_mongo("Plan")
-    collection = db["OpenPlan"]
-    course_data = collection.find_one({"Plan_ID": plan_id})
-    plan_subject = course_data['Open_Plan']
-    for i in range(len(plan_subject)):
-        prolog.assertz(
-            f"course('{plan_subject[i]['CID']}', '{plan_subject[i]['CNAME']}', '{plan_subject[i]['GID']}', '{plan_subject[i]['GNAME']}', {plan_subject[i]['ALLOWYEAR']}, {plan_subject[i]['OPENSEM']})"
-        )
-
-def open_plan(plan_id):
-    db = connect_mongo("Plan")
-    collection = db["OpenPlan"]
-    course_data = collection.find_one({"Plan_ID": plan_id})
-    if course_data:
-        assert_open_plan(plan_id)
-        print('1')
-    else: 
-        assert_required_course_open_plan(plan_id)
-        print('2')
-
 @app.post("/open_plan")
 def post_open_plan(request: OpenPlanChoice):
     remove_all_data()
@@ -288,100 +226,6 @@ def removed_course(request: OpenPlanCourse):
 
 
 ## TODO: Student used open plan
-def open_study_plan(stdID, courses):
-    # Retrieve data with fallback to empty lists if None is returned
-    # course = required_course()
-    passed = passed_courses(stdID)
-    future_data = future_course(stdID) + future_fail_course(stdID)
-    df = pd.DataFrame(future_data)
-    df['YEAR'] = df['YEAR'] % 100
-    df_unique = df.drop_duplicates()
-    future = df_unique.to_dict(orient='records')
-
-
-    # Find max YEAR
-    max_year = max(course['YEAR'] for course in passed)
-
-    # Filter courses with max YEAR
-    filtered_by_year = [course for course in passed if course['YEAR'] == max_year]
-
-    # Find max SEM from the filtered courses
-    max_sem = max(course['SEM'] for course in filtered_by_year)
-
-    # Filter courses with max SEM
-    max_y_s_p = [course for course in filtered_by_year if course['SEM'] == max_sem]
-
-    if max_y_s_p[0]['SEM'] == 2:
-        max_y_s_p[0]['SEM'] = 1
-        max_y_s_p[0]['YEAR'] = max_y_s_p[0]['YEAR'] + 1
-    if max_y_s_p[0]['SEM'] == 1:
-        max_y_s_p[0]['SEM'] = 2
-    current_year = max_y_s_p[0]['YEAR']
-    current_sem = max_y_s_p[0]['SEM']
-
-    remove_courses = set()
-    for course in future:
-        query_grade = list(prolog.query(f"recivedGrade('{stdID}', '{course['CID']}', CNAME, GRADE, YEAR, SEM)"))
-        for i in range(len(query_grade)):
-            query_grade[i]['CID'] = course['CID']
-        # Check if the course is already passed
-        for grade_entry in query_grade:
-            if grade_entry['GRADE'] not in ["Undefined", "F"]:  # Passed courses
-                remove_courses.add(grade_entry['CID'])
-
-    # Filter out passed courses
-    future = [course for course in future if course['CID'] not in remove_courses]
-    # print(future)
-    # TODO: Added test
-    for course in future:
-        course_year = course['YEAR']
-        course_sem = course['SEM']
-
-        if course_year < current_year and course_sem == 2:
-            # If previous year's sem 2, register in current semester
-            course['YEAR'], course['SEM'] = current_year, current_sem
-        elif course_year < course['SEM'] and course_sem == 1:
-            # If previous year's sem 1, register in next year's sem 1
-            course['YEAR'], course['SEM'] = current_year + 1, 1
-        else:
-            # Otherwise, keep the original registration year and semester
-            course['YEAR'], course['SEM'] = course_year, course_sem
-
-        print(f"Course {course['CID']} should be registered in Year {course['YEAR']}, Semester {course['SEM']}")
-
-
-    grades = recieved_grade(stdID)
-    
-    studen_data = list(prolog.query(f"student('{stdID}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
-    student_current_year = (time.localtime().tm_year + 543 - 1) % 100
-    student_current_sem = studen_data[0]['StdSem']
-    # print(student_current_year, student_current_sem)
-    
-    future = [course for course in future if not (course['YEAR'] < student_current_year or course['SEM'] < student_current_sem)]
-    # print(future)
-    for course_passed in passed:
-        for course_grade in grades:
-            if course_passed['CID'] == course_grade['CID']:
-                course_passed['GRADE'] = course_grade['GRADE']
-    
-    for course_future in future:
-        course_future['GRADE'] = 'Undefined'
-
-    grades_f = list(prolog.query(f"recivedGrade('{stdID}', CID, CNAME, 'F', YEAR, SEM)"))
-    grades_w = list(prolog.query(f"recivedGrade('{stdID}', CID, CNAME, 'W', YEAR, SEM)"))
-    for i in range(len(grades_f)):
-        grades_f[i]['GRADE'] = 'F'
-    for i in range(len(grades_w)):
-        grades_w[i]['GRADE'] = 'W'
-    results =  passed + grades_f + grades_w + future
-
-    for course in courses:
-        for result in results:
-            if result['CID'] == course['CID']:
-                result['CNAME'] = course['CNAME']
-    return results
-
-
 #assert_open_plan(request.Plan_ID)
 @app.post("/open_plan/{stdID}")
 def student_open_plan(stdID: str, request: OpenPlanChoice):
@@ -417,3 +261,21 @@ def post_open_plan_drop_fail_course(request: OpenPlanDropFailCourseRequest):
     course = list(prolog.query(f"course(CID, CNAME, GID, GNAME, ALLOWYEAR, OPENSEM)"))
     results = open_study_plan(request.StdID, course)
     return results
+
+# TODO: Advisor part
+@app.get("/advior_data/")
+def get_advisor_data():
+    return mock_advisor_data
+
+
+# advisor_code = "McLaren12345"
+# advisor_plan_id = 9363
+
+@app.post("/advisee_list_data/{advisor_code}")
+def advisee_data(advisor_code):
+    remove_all_data()
+    # open_plan(advisor_plan_id)
+    # open_plan_assert_data(request.StdID)
+    return query_advisee_data(advisor_code)
+
+# advisee_data(advisor_code, advisor_plan_id)
