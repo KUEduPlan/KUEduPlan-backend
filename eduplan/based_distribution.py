@@ -29,12 +29,14 @@ def distribution(cid, pre_course_ids):
                         if year in results.keys():
                             data = {
                                 'CID': course['CID'],
-                                'Ineligible': results[year]['Ineligible'] + 1
+                                'Ineligible': results[year]['Ineligible'] + 1,
+                                'Eligible': 0
                             }
                         else:
                             data = {
                                 'CID': course['CID'],
-                                'Ineligible': 1
+                                'Ineligible': 1,
+                                'Eligible': 0
                             }
                         results[year] = data         
     if len(results) != 0:
@@ -149,6 +151,3 @@ def distribution_course():
     for course in distribution_data:
         results.append({'CID': course['CID'], 'CNAME': course['CNAME']})
     return results
-
-def distribution_drop_case():
-    pass

@@ -185,8 +185,28 @@ def post_distribution_course(CID):
                 return distribution(CID, pre_course_ids)
             if course['CID'] in pre_course_ids:
                 return pre_sub_distribution(CID, pre_course_ids, pre_course)
-            
 
+@app.post("/allow_sub_dis_cid/{CID}")          
+def post_allow_distribution_course(CID):
+    student_code = '6410546131'
+    assert_data(student_code)
+    assert_rules()
+    pre_course = pre_Course()
+    pre_course_ids = {course['PREID'] for course in pre_course}.union({course['CID'] for course in pre_course})
+    for course in distribution_data:
+        if course['CID'] == CID:
+            if course['CID'] not in pre_course_ids:
+                data =  distribution(CID, pre_course_ids)
+                for year, values in data.items():
+                    values["Eligible"] +=  values["Ineligible"]
+                    values["Ineligible"] = 0
+                return data
+            if course['CID'] in pre_course_ids:
+                data = pre_sub_distribution(CID, pre_course_ids, pre_course)
+                for year, values in data.items():
+                    values["Ineligible"] -= values["GOT_F_Passed_Pre"]
+                    values["Eligible"] += values["GOT_F_Passed_Pre"]
+                return data
 
 ### TODO: Open Plan
 @app.post("/open_plan")
