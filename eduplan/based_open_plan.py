@@ -134,9 +134,9 @@ def open_study_plan(stdID, courses):
     for i in range(len(grades_w)):
         grades_w[i]['GRADE'] = 'W'
     results =  passed + grades_f + grades_w + future
-
     for course in courses:
         for result in results:
             if result['CID'] == course['CID']:
                 result['CNAME'] = course['CNAME']
+                result['GID'] = course['GID']
     return results

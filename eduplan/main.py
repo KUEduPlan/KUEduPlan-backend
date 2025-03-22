@@ -256,6 +256,8 @@ def student_open_plan(stdID: str, request: OpenPlanChoice):
     assert_rules()
     course = list(prolog.query(f"course(CID, CNAME, GID, GNAME, ALLOWYEAR, OPENSEM)"))
     results = open_study_plan(stdID, course)
+    for course in results:
+        course.setdefault('GID', '0')
     return results
 
 @app.post("/open_plan/submit_drop_fail_course/")
