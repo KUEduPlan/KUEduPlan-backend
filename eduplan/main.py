@@ -1,3 +1,4 @@
+from math import e
 from unittest import result
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import RedirectResponse
@@ -59,8 +60,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         else:
             access_token = create_access_token(data={"sub": user["username"], "role": user["role"]})
             return {"username": user["username"], "access_token": access_token, "token_type": "bearer"}
-    except:
-        print('error')
+    except Exception as e:
+        print(e)
 
 @app.get("/protected")
 def protected_route(token: str = Depends(oauth2_scheme)):
