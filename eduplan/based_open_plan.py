@@ -27,6 +27,32 @@ def assert_required_course_open_plan(plan_id):
             f"course('{plan_subject[i]['CID']}', '{plan_subject[i]['CNAME']}', '{plan_subject[i]['GID']}', '{plan_subject[i]['GNAME']}', {plan_subject[i]['ALLOWYEAR']}, {plan_subject[i]['OPENSEM']})"
         )
 
+def assert_preco_course_plan_id(plan_id):
+    db = connect_mongo("Curriculumn")
+    collection = db["PreCoSubject"]
+    course_data = collection.find_one({"plan_id": plan_id})
+    preco_subject = course_data['preco_subject']
+
+    df = pd.DataFrame(preco_subject)
+    filtered_df_pre = df[df['preco_type'].isin(['pre'])]
+    filtered_df_co = df[df['preco_type'].isin(['co'])]
+    pre_course = filtered_df_pre.to_dict(orient='records')
+    co_course = filtered_df_co.to_dict(orient='records')
+
+    for i in range(len(pre_course)):
+        pre_course[i]['preco_code'] = pre_course[i]['preco_code'].split('-')[0]
+        pre_course[i]['subject_code'] = pre_course[i]['subject_code'].split('-')[0]
+        prolog.assertz(
+            f"directPrerequisiteOf('{pre_course[i]['preco_code']}', '{pre_course[i]['subject_code']}')"
+        )
+
+    for i in range(len(co_course)):
+        co_course[i]['preco_code'] = co_course[i]['preco_code'].split('-')[0]
+        co_course[i]['subject_code'] = co_course[i]['subject_code'].split('-')[0]
+        prolog.assertz(
+            f"corequisiteOf('{co_course[i]['preco_code']}', '{co_course[i]['subject_code']}')"
+        )
+
 def assert_open_plan(plan_id):
     db = connect_mongo("Plan")
     collection = db["OpenPlan"]

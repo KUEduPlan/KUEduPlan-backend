@@ -32,7 +32,7 @@ def request_token(password, username):
     return token['access']
 
 
-def verify_token(token):
+def verify_token_iwing(token):
     url = os.getenv("URL_VERIFY_TOKEN")
     data = {
     "token": token,

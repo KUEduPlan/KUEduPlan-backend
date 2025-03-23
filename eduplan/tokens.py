@@ -47,6 +47,5 @@ def revoke_tokens(student_code, tokens):
     print(existing_data)
     if existing_data:
         collection.replace_one({"StdID":student_code}, data)
-        print("====")
 
     return "Revoke user tokens"

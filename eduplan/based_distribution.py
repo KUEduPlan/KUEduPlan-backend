@@ -149,5 +149,5 @@ def eligible_passed_pre_std(pre, cour):
 def distribution_course():
     results = []
     for course in distribution_data:
-        results.append({'CID': course['CID'], 'CNAME': course['CNAME']})
+        results.append({'CID': course['CID'], 'CNAME': course['CNAME'], 'F': len(course['STD_GOT_F'])})
     return results

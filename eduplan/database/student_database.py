@@ -81,7 +81,6 @@ def insert_or_replace_open_plan_database(collection_name: str, plan_id:int, data
 
 def insert_open_plan_data(plan_id, data):
     collection_name = "OpenPlan"
-    print(data)
     try:
         inserted_data = {
             "Plan_ID": plan_id,
