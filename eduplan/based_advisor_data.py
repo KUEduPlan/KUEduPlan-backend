@@ -2,7 +2,7 @@ from pyswip import Prolog
 from based_prolog_data import *
 
 mock_advisor_data = [{
-  "advisor_code": "McLaren12345",
+  "advisor_code": "advisoruser",
   "first_name_th": "Norris",
   "last_name_th": "Lando",
   "campus_code": "B",
@@ -20,7 +20,7 @@ mock_advisor_data = [{
 }]
 
 mock_advisee_data = [{
-  "advisor_code": "McLaren12345",
+  "advisor_code": "advisoruser",
   "advisee_list": [
 	{"std_id": "6410546131"},
     {"std_id": "6410545541"}
