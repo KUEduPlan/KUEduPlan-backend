@@ -84,12 +84,12 @@ def open_study_plan(stdID, courses):
     df_unique = df.drop_duplicates()
     future = df_unique.to_dict(orient='records')
 
-
+    passed_copy = passed_courses(stdID)
     # Find max YEAR
-    max_year = max(course['YEAR'] for course in passed)
+    max_year = max(course['YEAR'] for course in passed_copy)
 
     # Filter courses with max YEAR
-    filtered_by_year = [course for course in passed if course['YEAR'] == max_year]
+    filtered_by_year = [course for course in passed_copy if course['YEAR'] == max_year]
 
     # Find max SEM from the filtered courses
     max_sem = max(course['SEM'] for course in filtered_by_year)
@@ -144,6 +144,7 @@ def open_study_plan(stdID, courses):
     # print(student_current_year, student_current_sem)
     
     future = [course for course in future if not (course['YEAR'] < student_current_year or course['SEM'] < student_current_sem)]
+
     # print(future)
     for course_passed in passed:
         for course_grade in grades:
@@ -159,6 +160,7 @@ def open_study_plan(stdID, courses):
         grades_f[i]['GRADE'] = 'F'
     for i in range(len(grades_w)):
         grades_w[i]['GRADE'] = 'W'
+
     results =  passed + grades_f + grades_w + future
     for course in courses:
         for result in results:
