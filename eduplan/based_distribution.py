@@ -11,8 +11,8 @@ from collections import Counter
 # No passed pre
 distribution_data = [{'CID' : '01417167', 'CNAME': 'คณิตศาสตร์วิศวกรรม I', 'STD_GOT_F': [{'STD_ID': '6410546131', 'STD_REGISTER_YEAR': 2563}], 'STD_PASSED': [{'STD_ID': '6410546133', 'STD_REGISTER_YEAR': 2563}, {'STD_ID': '64105461443', 'STD_REGISTER_YEAR': 2563}, {'STD_ID': '3', 'STD_REGISTER_YEAR': 2563}]},
                      {'CID' : '01417168', 'CNAME': 'คณิตศาสตร์วิศวกรรม II', 'STD_GOT_F': [{'STD_ID': '6410546131', 'STD_REGISTER_YEAR': 2563}, {'STD_ID': '6410546133', 'STD_REGISTER_YEAR': 2563}, {'STD_ID': '789789', 'STD_REGISTER_YEAR': 2564}], 'STD_PASSED': [{}]},
-                     {'CID' : 'f1', 'CNAME': 'f1', 'STD_GOT_F': [{}], 'STD_PASSED': [{}]},
-                     {'CID' : 'f2', 'CNAME': 'f2', 'STD_GOT_F': [{'STD_ID': '6410', 'STD_REGISTER_YEAR': 2563}, {'STD_ID': '0876', 'STD_REGISTER_YEAR': 2563}, {'STD_ID': '789789', 'STD_REGISTER_YEAR': 2564}], 'STD_PASSED': [{'STD_ID': '34234', 'STD_REGISTER_YEAR': 2563}]}
+                     {'CID' : '01175165', 'CNAME': 'การฝึกด้วยน้าหนักเพื่อสุขภาพ', 'STD_GOT_F': [{}], 'STD_PASSED': [{}]},
+                     {'CID' : '01219114', 'CNAME': 'การโปรแกรมคอมพิวเตอร์ I', 'STD_GOT_F': [{'STD_ID': '6410', 'STD_REGISTER_YEAR': 2563}, {'STD_ID': '0876', 'STD_REGISTER_YEAR': 2563}, {'STD_ID': '789789', 'STD_REGISTER_YEAR': 2564}], 'STD_PASSED': [{'STD_ID': '34234', 'STD_REGISTER_YEAR': 2563}]}
                      ]
 
 
