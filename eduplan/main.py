@@ -145,8 +145,12 @@ def post_allow_distribution_course(CID, request: OpenPlanChoice, user: dict = De
             if course['CID'] in pre_course_ids:
                 data = pre_sub_distribution(CID, pre_course_ids, pre_course)
                 for year, values in data.items():
-                    values["Ineligible"] -= values["GOT_F_Passed_Pre"]
-                    values["Eligible"] += values["GOT_F_Passed_Pre"]
+                    if "GOT_F_Passed_Pre" in  values.keys():
+                        values["Ineligible"] -= values["GOT_F_Passed_Pre"]
+                        values["Eligible"] += values["GOT_F_Passed_Pre"]
+                    else:
+                        values["Eligible"] +=  values["Ineligible"]
+                        values["Ineligible"] = 0
                 return data
 
 ### TODO: Open Plan for curriculumn admin

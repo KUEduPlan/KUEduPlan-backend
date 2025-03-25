@@ -95,6 +95,30 @@ def pre_sub_distribution(cid, pre_course_ids, pre_course):
                                             results[key]['Eligible'] = eligible[key]
                                         else:
                                             results[key]['Eligible'] = 0
+                        if course['CID'] == pre_course[i]['PREID']:
+                            for precourse in distribution_data:
+                                if precourse['CID'] == pre_course[i]['CID']:
+                                    results = {}
+                                    for course in distribution_data:
+                                        if course['CID'] == cid:
+                                            if course['CID'] in pre_course_ids:
+                                                for student in course.get('STD_GOT_F', []):
+                                                    if len(student) != 0:
+                                                        year = student['STD_REGISTER_YEAR']
+
+                                                        if year in results.keys():
+                                                            data = {
+                                                                'CID': course['CID'],
+                                                                'Ineligible': results[year]['Ineligible'] + 1,
+                                                                'Eligible': 0
+                                                            }
+                                                        else:
+                                                            data = {
+                                                                'CID': course['CID'],
+                                                                'Ineligible': 1,
+                                                                'Eligible': 0
+                                                            }
+                                                        results[year] = data    
     if len(results) != 0:
         return results
     else:
