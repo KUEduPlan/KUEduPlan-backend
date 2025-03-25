@@ -112,7 +112,7 @@ def open_study_plan(stdID, courses):
             query_grade[i]['CID'] = course['CID']
         # Check if the course is already passed
         for grade_entry in query_grade:
-            if grade_entry['GRADE'] not in ["Undefined", "F"]:  # Passed courses
+            if grade_entry['GRADE'] not in ["Undefined", "F", "W"]:  # Passed courses
                 remove_courses.add(grade_entry['CID'])
 
     # Filter out passed courses
@@ -160,7 +160,7 @@ def open_study_plan(stdID, courses):
         grades_f[i]['GRADE'] = 'F'
     for i in range(len(grades_w)):
         grades_w[i]['GRADE'] = 'W'
-
+    
     results =  passed + grades_f + grades_w + future
     for course in courses:
         for result in results:
