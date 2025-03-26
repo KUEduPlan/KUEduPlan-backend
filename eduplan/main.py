@@ -245,7 +245,7 @@ def post_open_plan(request: OpenPlanChoice, user: dict = Depends(verify_token)):
 # Endpount to get the student data
 @app.get("/student_data/{stdID}")
 def get_student_data(stdID, user: dict = Depends(verify_token)):
-    if user["role"] != "student":
+    if user["role"] == "curriculum_admin":
         raise HTTPException(status_code=403, detail="Access forbidden: Admins only")
     remove_all_data()
     assert_data(stdID)
