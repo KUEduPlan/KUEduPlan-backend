@@ -74,22 +74,12 @@ def open_plan(plan_id):
         assert_required_course_open_plan(plan_id)
         print('2')
 
-def open_study_plan(stdID, courses):
-    # Retrieve data with fallback to empty lists if None is returned
-    # course = required_course()
-    passed = passed_courses(stdID)
-    future_data = future_course(stdID) + future_fail_course(stdID)
-    df = pd.DataFrame(future_data)
-    df['YEAR'] = df['YEAR'] % 100
-    df_unique = df.drop_duplicates()
-    future = df_unique.to_dict(orient='records')
-
-    passed_copy = passed_courses(stdID)
-    # Find max YEAR
-    max_year = max(course['YEAR'] for course in passed_copy)
+def calculate_current_sem_year(passed_course):
+        # Find max YEAR
+    max_year = max(course['YEAR'] for course in passed_course)
 
     # Filter courses with max YEAR
-    filtered_by_year = [course for course in passed_copy if course['YEAR'] == max_year]
+    filtered_by_year = [course for course in passed_course if course['YEAR'] == max_year]
 
     # Find max SEM from the filtered courses
     max_sem = max(course['SEM'] for course in filtered_by_year)
@@ -104,7 +94,23 @@ def open_study_plan(stdID, courses):
         max_y_s_p[0]['SEM'] = 2
     current_year = max_y_s_p[0]['YEAR']
     current_sem = max_y_s_p[0]['SEM']
+    return current_year, current_sem
 
+def open_study_plan(stdID, courses):
+    # Retrieve data with fallback to empty lists if None is returned
+    # course = required_course()
+    passed = passed_courses(stdID)
+    future_data = future_course(stdID) + future_fail_course(stdID)
+    df = pd.DataFrame(future_data)
+    df['YEAR'] = df['YEAR'] % 100
+    df_unique = df.drop_duplicates()
+    df_unique = df_unique.drop_duplicates()
+    future = df_unique.to_dict(orient='records')
+
+    passed_copy = passed_courses(stdID)
+    current_year, current_sem = calculate_current_sem_year(passed_copy)
+
+    # TODO: F แล้ว ลงใหม่แล้วแล้วผ่านแล้วแต่ขึ้นใน future course
     remove_courses = set()
     for course in future:
         query_grade = list(prolog.query(f"recivedGrade('{stdID}', '{course['CID']}', CNAME, GRADE, YEAR, SEM)"))
@@ -114,11 +120,12 @@ def open_study_plan(stdID, courses):
         for grade_entry in query_grade:
             if grade_entry['GRADE'] not in ["Undefined", "F", "W"]:  # Passed courses
                 remove_courses.add(grade_entry['CID'])
-
+    
     # Filter out passed courses
     future = [course for course in future if course['CID'] not in remove_courses]
+    
     # print(future)
-    # TODO: Added test
+    # TODO: The course must be enrolled only in the current semester.
     for course in future:
         course_year = course['YEAR']
         course_sem = course['SEM']
@@ -135,6 +142,9 @@ def open_study_plan(stdID, courses):
 
         print(f"Course {course['CID']} should be registered in Year {course['YEAR']}, Semester {course['SEM']}")
 
+    df_future = pd.DataFrame(future)
+    df_unique_future = df_future.drop_duplicates()
+    future = df_unique_future.to_dict(orient='records')
 
     grades = recieved_grade(stdID)
     
@@ -145,6 +155,24 @@ def open_study_plan(stdID, courses):
     
     future = [course for course in future if not (course['YEAR'] < student_current_year or course['SEM'] < student_current_sem)]
 
+    # Count occurrences of each CID
+    cid_latest = {}
+
+    def is_later(year1, sem1, year2, sem2):
+        return (year1, sem1) > (year2, sem2)
+
+    for course in future:
+        cid = course['CID']
+        year = course['YEAR']
+        sem = course['SEM']
+        
+        if cid not in cid_latest or is_later(year, sem, cid_latest[cid]['YEAR'], cid_latest[cid]['SEM']):
+            cid_latest[cid] = course
+
+    # Keep only the latest entries in future
+    future = list(cid_latest.values())
+
+    print(future)
     # print(future)
     for course_passed in passed:
         for course_grade in grades:

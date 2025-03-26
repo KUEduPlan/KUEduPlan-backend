@@ -108,24 +108,41 @@ def assert_student_recived_grade_current_sem_open_plan(student_code):
     student_grades = std_collection.find_one({"student_code": student_code})['grades']
 
     results = list(prolog.query(f"student('{student_code}', StdFirstName, StdLastName, CID, FID, DID, MID, CurID, PlanID, StdRegisterYear, Status, StdSem)"))
-    db = connect_mongo("Curriculumn")
-    collection = db["PlanSubject"]
-    course_data = collection.find_one({"plan_id": results[0]['PlanID']})['plan_subject']
-    for i in range(len(course_data)):
-        course_data[i]['subject_code'] = course_data[i]['subject_code'].split('-')[0]
+    db = connect_mongo("Plan")
+    collection = db["OpenPlan"]
+    course_data = collection.find_one({"Plan_ID": results[0]['PlanID']})['Open_Plan']
+
     # Create pandas DataFrames
     df_student = pd.DataFrame(student_grades)
     df_course = pd.DataFrame(course_data)
 
     # Find the subject_codes in student data that are not in course data
-    subject_codes_in_student_not_in_course = df_course[~df_course['subject_code'].isin(df_student['subject_code'])]
+    # subject_codes_in_student_not_in_course = df_course[~df_course['CID'].isin(df_student['subject_code'])]
+    subject_codes_in_student_not_in_course = df_course[
+    ~df_course.set_index(['CID', 'OPENSEM']).index.isin(df_student.set_index(['subject_code', 'semester']).index)
+    ]
+
+    # Sample DataFrames (Assuming they are already defined)
+    subject_codes_in_student_not_in_course = subject_codes_in_student_not_in_course.copy()
+    df_student = df_student.copy()
+
+    # Filter df_student to only include rows where grade is not 'F'
+    valid_subjects = df_student[df_student["grade"] != "F"]["subject_code"].unique()
+
+    # Filter out rows from subject_codes_in_student_not_in_course where CID is in valid_subjects
+    subject_codes_in_student_not_in_course = subject_codes_in_student_not_in_course[
+        ~subject_codes_in_student_not_in_course["CID"].isin(valid_subjects)
+    ]
+
+    # Display the updated DataFrame
     undefined_course_data = subject_codes_in_student_not_in_course.to_dict(orient='records')
 
+    # print(undefined_course_data)
     for i in range(len(undefined_course_data)):
-        undefined_course_data[i]['class_year'] = (undefined_course_data[i]['class_year'] + results[0]['StdRegisterYear'] - 1) % 100
-        undefined_course_data[i]['subject_code'] = undefined_course_data[i]['subject_code']
+        undefined_course_data[i]['ALLOWYEAR'] = (undefined_course_data[i]['ALLOWYEAR'] + results[0]['StdRegisterYear'] - 1) % 100
+        undefined_course_data[i]['CID'] = undefined_course_data[i]['CID']
         prolog.assertz(
-            f"recivedGrade('{student_code}', '{undefined_course_data[i]['subject_code']}', '{undefined_course_data[i]['subject_name']}', 'Undefined', {undefined_course_data[i]['class_year']}, {undefined_course_data[i]['semester']})"
+            f"recivedGrade('{student_code}', '{undefined_course_data[i]['CID']}', '{undefined_course_data[i]['CNAME']}', 'Undefined', {undefined_course_data[i]['ALLOWYEAR']}, {undefined_course_data[i]['OPENSEM']})"
         )
 # Query for passed courses
 def student_data(stdID):

@@ -53,6 +53,10 @@ def load_mock_data(prolog):
     prolog.assertz("course('X', 'AB3', '2', 'l', 1, 2)")
     prolog.assertz("course('M', 'AB4', '2', 'l', 1, 2)")
 
+    prolog.assertz("directPrerequisiteOf('KEI', 'KEII')")
+    prolog.assertz("course('KEI', 'KEI', '2', 'l', 3, 2)")
+    prolog.assertz("course('KEII', 'KEII', '2', 'l', 4, 1)")
+
     prolog.assertz("recivedGrade('64105465555', 'A', 'AA', 'A', 65, 1)")
     prolog.assertz("recivedGrade('64105465555', 'B', 'AB', 'F', 65, 2)")
     prolog.assertz("recivedGrade('64105465555', 'B2', 'AB2', 'W', 65, 2)")
@@ -65,6 +69,9 @@ def load_mock_data(prolog):
     prolog.assertz("recivedGrade('64105465555', 'F', 'AI', 'Undefined', 67, 2)")
     prolog.assertz("recivedGrade('64105465555', 'G', 'AG', 'Undefined', 68, 1)")
     prolog.assertz("recivedGrade('64105465555', 'H', 'AF', 'Undefined', 68, 2)")
+
+    prolog.assertz("recivedGrade('64105465555', 'KEI', 'KEI', 'F', 66, 2)")
+    prolog.assertz("recivedGrade('64105465555', 'KEII', 'KEII', 'Undefined', 67, 1)")
 
 
 prolog = Prolog()
@@ -86,14 +93,20 @@ class TestPrologRules(unittest.TestCase):
     def test_pre_course(self):
         load_mock_data(prolog)
         pre_rule()
-        expected = [{'PREID': 'A', 'CID': 'C'}, {'PREID': 'Z', 'CID': 'X'}, {'PREID': 'A', 'CID': 'B'}, {'PREID': 'B', 'CID': 'C'}, {'PREID': 'Z', 'CID': 'Y'}, {'PREID': 'Y', 'CID': 'X'}]
+        expected = [{'PREID': 'A', 'CID': 'C'}, {'PREID': 'Z', 'CID': 'X'}, {'PREID': 'A', 'CID': 'B'}, {'PREID': 'B', 'CID': 'C'}, {'PREID': 'Z', 'CID': 'Y'}, {'PREID': 'Y', 'CID': 'X'}, {'PREID': 'KEI', 'CID': 'KEII'}]
         results = pre_Course()
         self.assertEqual(results, expected)
 
     def test_recieved_grade(self):
         load_mock_data(prolog)
         results = recieved_grade(self.stdID)
-        expected = [{'CID': 'A', 'CName': 'AA', 'GRADE': 'A', 'YEAR': 65, 'SEM': 1}, {'CID': 'B', 'CName': 'AB', 'GRADE': 'F', 'YEAR': 65, 'SEM': 2}, {'CID': 'B2', 'CName': 'AB2', 'GRADE': 'W', 'YEAR': 65, 'SEM': 2}, {'CID': 'Z', 'CName': 'ZZ', 'GRADE': 'A', 'YEAR': 65, 'SEM': 1}, {'CID': 'C', 'CName': 'AC', 'GRADE': 'F', 'YEAR': 66, 'SEM': 1}, {'CID': 'D', 'CName': 'AD', 'GRADE': '-', 'YEAR': 66, 'SEM': 2}, {'CID': 'E', 'CName': 'AE', 'GRADE': 'Undefined', 'YEAR': 67, 'SEM': 1}, {'CID': 'F', 'CName': 'AI', 'GRADE': 'Undefined', 'YEAR': 67, 'SEM': 2}, {'CID': 'G', 'CName': 'AG', 'GRADE': 'Undefined', 'YEAR': 68, 'SEM': 1}, {'CID': 'H', 'CName': 'AF', 'GRADE': 'Undefined', 'YEAR': 68, 'SEM': 2}]
+        expected = [{'CID': 'A', 'CName': 'AA', 'GRADE': 'A', 'YEAR': 65, 'SEM': 1}, {'CID': 'B', 'CName': 'AB', 'GRADE': 'F', 'YEAR': 65, 'SEM': 2}, 
+                    {'CID': 'B2', 'CName': 'AB2', 'GRADE': 'W', 'YEAR': 65, 'SEM': 2}, {'CID': 'Z', 'CName': 'ZZ', 'GRADE': 'A', 'YEAR': 65, 'SEM': 1}, 
+                    {'CID': 'C', 'CName': 'AC', 'GRADE': 'F', 'YEAR': 66, 'SEM': 1}, {'CID': 'D', 'CName': 'AD', 'GRADE': '-', 'YEAR': 66, 'SEM': 2}, 
+                    {'CID': 'E', 'CName': 'AE', 'GRADE': 'Undefined', 'YEAR': 67, 'SEM': 1}, {'CID': 'F', 'CName': 'AI', 'GRADE': 'Undefined', 'YEAR': 67, 'SEM': 2}, 
+                    {'CID': 'G', 'CName': 'AG', 'GRADE': 'Undefined', 'YEAR': 68, 'SEM': 1}, {'CID': 'H', 'CName': 'AF', 'GRADE': 'Undefined', 'YEAR': 68, 'SEM': 2},
+                    {'CID': 'KEI', 'CName': 'KEI', 'GRADE': 'F', 'YEAR': 66, 'SEM': 2}, {'CID': 'KEII', 'CName': 'KEII', 'GRADE': 'Undefined', 'YEAR': 67, 'SEM': 1},
+                    ]
         self.assertEqual(results, expected)
 
     def test_passed_course(self):
@@ -146,7 +159,8 @@ class TestPrologRules(unittest.TestCase):
         can_register_co_course_rule()
         future_course_undefined_rule()
         results = future_course(self.stdID)
-        expected = [{'CID': 'E', 'CNAME': 'AE', 'YEAR': 2567, 'SEM': 1}, {'CID': 'F', 'CNAME': 'AI', 'YEAR': 2567, 'SEM': 2}, {'CID': 'G', 'CNAME': 'AG', 'YEAR': 2568, 'SEM': 1}, {'CID': 'H', 'CNAME': 'AF', 'YEAR': 2568, 'SEM': 2}]
+        expected = [{'CID': 'E', 'CNAME': 'AE', 'YEAR': 2567, 'SEM': 1}, {'CID': 'F', 'CNAME': 'AI', 'YEAR': 2567, 'SEM': 2}, {'CID': 'G', 'CNAME': 'AG', 'YEAR': 2568, 'SEM': 1}, 
+                    {'CID': 'H', 'CNAME': 'AF', 'YEAR': 2568, 'SEM': 2}, {'CID': 'KEII', 'CNAME': 'KEII', 'SEM': 1, 'YEAR': 2568}]
         self.assertEqual(results, expected)
 
     def test_future_course_fail(self):
@@ -160,7 +174,7 @@ class TestPrologRules(unittest.TestCase):
         can_register_co_course_rule()
         future_course_fail_rule()  
         results = future_fail_course(self.stdID)
-        expected = [{'CID': 'B', 'CNAME': 'AB', 'YEAR': 2566, 'SEM': 2}, {'CID': 'C', 'CNAME': 'AC', 'YEAR': 2567, 'SEM': 1}]
+        expected = [{'CID': 'B', 'CNAME': 'AB', 'YEAR': 2566, 'SEM': 2}, {'CID': 'C', 'CNAME': 'AC', 'YEAR': 2567, 'SEM': 1}, {'CID': 'KEI', 'CNAME': 'KEI', 'SEM': 2, 'YEAR': 2567}]
         self.assertEqual(results, expected)
 
     def test_future_course_drop(self):
