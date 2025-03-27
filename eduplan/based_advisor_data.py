@@ -17,6 +17,23 @@ mock_advisor_data = [{
   "plan_id": 3963,
   "status_code": "17004",
   "status_code_desc": "พิเศษ (นานาชาติ)"
+},
+{
+  "advisor_code": "advisoruser2",
+  "first_name_th": "George",
+  "last_name_th": "Russell",
+  "campus_code": "B",
+  "faculty_code": "E",
+  "dept_code": "B",
+  "major_code": "E17",
+  "campus_name_th": "บางเขน",
+  "faculty_name_th": "วิศวกรรมศาสตร์",
+  "dept_name_th": "วิศวกรรมคอมพิวเตอร์",
+  "major_name_th": "วิศวกรรมซอฟต์แวร์และความรู้",
+  "cur_id": 11305,
+  "plan_id": 5743,
+  "status_code": "17004",
+  "status_code_desc": "พิเศษ (นานาชาติ)"
 }]
 
 mock_advisee_data = [{
@@ -24,6 +41,12 @@ mock_advisee_data = [{
   "advisee_list": [
 	{"std_id": "6410546131"},
     {"std_id": "6410545541"}
+]},
+{
+  "advisor_code": "advisoruser2",
+  "advisee_list": [
+	{"std_id": "6510503492"},
+    {"std_id": "6510503549"}
 ]}]
 
 prolog = Prolog()
