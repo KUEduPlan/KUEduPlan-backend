@@ -51,7 +51,7 @@ def insert_plan_list(student_code: str, client, token):
         insert_or_replace_database_cur_id(collection_name, student_cur_id, inserted_data)
         return "Already insert student grades"
     except Exception as e:
-        print(f"Error in insert_student_grades: {e}")
+        print(f"Error in insert_plan_list: {e}")
         return e
 
 def insert_structure(student_code: str, client, token):
@@ -71,7 +71,7 @@ def insert_structure(student_code: str, client, token):
         insert_or_replace_database_plan_id(collection_name, student_plan_id, inserted_data)
         return "Already insert student grades"
     except Exception as e:
-        print(f"Error in insert_student_grades: {e}")
+        print(f"Error in insert_structure: {e}")
         return e  
 
 def insert_plan_subject(student_code: str, client, token):
@@ -91,7 +91,7 @@ def insert_plan_subject(student_code: str, client, token):
         insert_or_replace_database_plan_id(collection_name, student_plan_id, inserted_data)
         return "Already insert student grades"
     except Exception as e:
-        print(f"Error in insert_student_grades: {e}")
+        print(f"Error in insert_plan_subject: {e}")
         return e  
 
 def insert_preco_subject(student_code: str, client, token):
@@ -107,9 +107,9 @@ def insert_preco_subject(student_code: str, client, token):
         }
 
         if not data:
-            raise ValueError("No data returned from student_grades function")
+            raise ValueError("No data returned from preco_subjects function")
         insert_or_replace_database_plan_id(collection_name, student_plan_id, inserted_data)
         return "Already insert student grades"
     except Exception as e:
-        print(f"Error in insert_student_grades: {e}")
+        print(f"Error in insert_preco_subject: {e}")
         return e  

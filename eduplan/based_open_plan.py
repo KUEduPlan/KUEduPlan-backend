@@ -188,7 +188,7 @@ def open_study_plan(stdID, courses):
     for i in range(len(grades_w)):
         grades_w[i]['GRADE'] = 'W'
 
-    pre_course = pre_Course()
+    pre_course = direct_pre_Course()
     future = F_W_condition(future, pre_course, grades_f, grades_w)
     results =  passed + grades_f + grades_w + future
     for course in courses:
@@ -213,7 +213,14 @@ def F_W_condition(future_courses, pre_course, grades_f, grades_w):
         if course['PREID'] in f_cids:
             print("ลงควบได้ F") 
         elif course['PREID'] in w_cids and course['PREID'] not in f_cids:
+            print("Drop case")
             for future in future_courses:
                 if future['CID'] == course['PREID']:
+                    year = future['YEAR']
+                if future['CID'] == course['CID']:
+                    future['YEAR'] = year + 1
+        elif course['PREID'] not in w_cids and course['PREID'] not in f_cids:
+            for future in future_courses:
+                if future['CID'] == course['CID']:
                     future['YEAR'] = future['YEAR'] + 1
     return future_courses

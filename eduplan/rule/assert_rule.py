@@ -187,6 +187,10 @@ def pre_Course():
     results = results_pre_courses + results_direct_courses
     return results
 
+def direct_pre_Course():
+    results = list(prolog.query("directPrerequisiteOf(PREID, CID)"))
+    return results
+
 def passed_courses(StdID):
     results = list(prolog.query(f"passedCourse('{StdID}', CID, CNAME,YEAR, SEM)"))
     return results
