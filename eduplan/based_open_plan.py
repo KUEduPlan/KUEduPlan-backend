@@ -1,5 +1,6 @@
 from rule.assert_rule import *
 from database.student_database import insert_open_plan_data
+from based_prolog_data import *
 
 def assert_required_course_open_plan(plan_id):
     db = connect_mongo("Curriculumn")
@@ -96,11 +97,11 @@ def calculate_current_sem_year(passed_course):
     current_sem = max_y_s_p[0]['SEM']
     return current_year, current_sem
 
+
 def open_study_plan(stdID, courses):
     # Retrieve data with fallback to empty lists if None is returned
-    # course = required_course()
     passed = passed_courses(stdID)
-    future_data = future_course(stdID) + future_fail_course(stdID)
+    future_data = future_course(stdID)
     df = pd.DataFrame(future_data)
     df['YEAR'] = df['YEAR'] % 100
     df_unique = df.drop_duplicates()
@@ -171,8 +172,6 @@ def open_study_plan(stdID, courses):
 
     # Keep only the latest entries in future
     future = list(cid_latest.values())
-
-    print(future)
     # print(future)
     for course_passed in passed:
         for course_grade in grades:
@@ -188,7 +187,9 @@ def open_study_plan(stdID, courses):
         grades_f[i]['GRADE'] = 'F'
     for i in range(len(grades_w)):
         grades_w[i]['GRADE'] = 'W'
-    
+
+    pre_course = pre_Course()
+    future = F_W_condition(future, pre_course, grades_f, grades_w)
     results =  passed + grades_f + grades_w + future
     for course in courses:
         for result in results:
@@ -196,3 +197,23 @@ def open_study_plan(stdID, courses):
                 result['CNAME'] = course['CNAME']
                 result['GID'] = course['GID']
     return results
+
+def F_W_condition(future_courses, pre_course, grades_f, grades_w):
+# Extract CID values from future_course
+    future_cids = {course['CID'] for course in future_courses}
+    f_cids = {course['CID'] for course in grades_f}
+    w_cids = {course['CID'] for course in grades_w}
+
+    # Find matching pre_courses where PREID is in future_cids
+    matching_pre_courses = [course for course in pre_course if course['PREID'] in future_cids and course['CID'] in future_cids]
+
+    # Print the results
+    print("Matching prerequisite courses:")
+    for course in matching_pre_courses:
+        if course['PREID'] in f_cids:
+            print("ลงควบได้ F") 
+        elif course['PREID'] in w_cids and course['PREID'] not in f_cids:
+            for future in future_courses:
+                if future['CID'] == course['PREID']:
+                    future['YEAR'] = future['YEAR'] + 1
+    return future_courses

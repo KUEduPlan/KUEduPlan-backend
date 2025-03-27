@@ -76,7 +76,8 @@ def can_register_co_course_rule():
             Year - StdYear >= AllowYear           
     ''')
 
-def future_course_undefined_rule():
+def future_course_undefined_rule(): 
+    ## F
     # Future course not register ########
     prolog.assertz(
         '''futureCourse(StdId, CId, CNAME, FutureYear, OpenSem) :-
@@ -89,6 +90,22 @@ def future_course_undefined_rule():
             FutureYear is Year + AllowYearDiff,
             FutureYear - StdYear >= AllowYear,
             canRegister(StdId, CId, FutureYear, _)
+        '''
+    )
+
+    ## W
+    prolog.assertz(   
+        '''futureCourse(StdId, CId, CNAME, FutureYear, OpenSem) :-
+            student(StdId, _, _, _, _, _, _, _, _, StdYear, _, _),
+            recivedGrade(StdId, CId, _, Grade, RegisterYear, _),
+            course(CId, CNAME, _, _, AllowYear, OpenSem),
+            Grade == 'Undefined',
+            currentYear(Year),
+            CheckAllowYear is  Year - StdYear -1,
+            CheckAllowYear >= AllowYear,
+            RecievedYear is RegisterYear + 2500,
+            FutureYear is RecievedYear + 1,
+            canRegister(StdId, CId, FutureYear, OpenSem)
         '''
     )
 
@@ -106,6 +123,7 @@ def future_course_fail_rule():
     #         canRegister(StdId, CId, FutureYear, OpenSem)
     #     '''
     # )
+
     prolog.assertz(
         '''futureCourse(StdId, CId, CNAME, FutureYear, OpenSem) :-
             student(StdId, _, _, _, _, _, _, _, _, StdYear, _, StdSem),
@@ -141,7 +159,7 @@ def future_course_drop_rule():
             course(CId, CNAME, _, _, AllowYear, OpenSem),
             Grade == 'W',
             currentYear(Year),
-            CheckAllowYear is  Year - StdYear -1,
+            CheckAllowYear is  Year - StdYear - 1,
             CheckAllowYear >= AllowYear,
             RecievedYear is RegisterYear + 2500,
             FutureYear is RecievedYear + 1,
